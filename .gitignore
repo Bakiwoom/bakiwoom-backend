@@ -46,5 +46,4 @@ ehthumbs.db
 # 환경설정 파일
 *.env
 .env.*
-application-local.yml
-application-local.properties
+application.properties
