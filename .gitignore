@@ -1,0 +1,50 @@
+# 기본 빌드 & 로그
+/target/
+build/
+logs/
+log/
+test-output/
+
+# Maven Wrapper
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+
+# 프로젝트별 build 폴더는 추적
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IDE 관련
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# VSCode
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# OS 별 캐시
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# 환경설정 파일
+*.env
+.env.*
+application-local.yml
+application-local.properties
