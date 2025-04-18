@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-public class UserController {
+public class AuthController {
 	
 	@PostMapping("/signup")
 	public String ping1() {
