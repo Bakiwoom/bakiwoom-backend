@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.javaex</groupId>
-    <artifactId>bakiwoom-backend</artifactId>
+    <artifactId>idea-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>bakiwoom-backend</name>
-    <description>bakiwoom-backend</description>
+    <name>idea-backend</name>
+    <description>idea-backend</description>
     <url/>
     <licenses>
         <license/>
