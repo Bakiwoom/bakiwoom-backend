@@ -1,10 +1,10 @@
-package com.javaex.bakiwoombackend;
+package com.javaex.ideabackend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BakiwoomBackendApplicationTests {
+class IdeaBackendApplicationTests {
 
     @Test
     void contextLoads() {
