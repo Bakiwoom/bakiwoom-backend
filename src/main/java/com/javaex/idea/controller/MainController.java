@@ -10,7 +10,7 @@ public class MainController {
 	
 	@GetMapping("/jobs")
 	public String ping() {
-        return "ping";
+        return "pong";
     }
 
 }
