@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="company">
+
+	<!-- 기업 정보 등록 -->
+    <insert id="insertCompany" parameterType="map">
+        INSERT INTO company (
+            member_id,
+            name,
+            business_number,
+            business_type,
+            size,
+            founding_year,
+            employee_count,
+            address,
+            phone,
+            email,
+            website,
+            logo,
+            intro,
+            created_at
+        ) VALUES (
+            #{memberId},
+            #{companyVo.name},
+            #{companyVo.businessNumber},
+            #{companyVo.businessType},
+            #{companyVo.size},
+            #{companyVo.foundingYear},
+            #{companyVo.employeeCount},
+            #{companyVo.address},
+            #{companyVo.phone},
+            #{companyVo.email},
+            #{companyVo.website},
+            #{companyVo.logo},
+            #{companyVo.intro},
+            NOW()
+        )
+    </insert>
+
+    <!-- 기업 정보 수정 -->
+    <update id="updateCompany" parameterType="CompanyVo">
+        UPDATE company SET
+            name = #{name},
+            business_number = #{businessNumber},
+            business_type = #{businessType},
+            size = #{size},
+            founding_year = #{foundingYear},
+            employee_count = #{employeeCount},
+            address = #{address},
+            phone = #{phone},
+            email = #{email},
+            website = #{website},
+            logo = #{logo},
+            intro = #{intro},
+            updated_at = NOW()
+        WHERE company_id = #{companyId}
+    </update>
+
+    <!-- 회원 ID로 기업 정보 조회 -->
+    <select id="getCompanyByMemberId" parameterType="int" resultType="CompanyVo">
+        SELECT 
+            company_id as companyId,
+            name,
+            business_number as businessNumber,
+            business_type as businessType,
+            size,
+            founding_year as foundingYear,
+            employee_count as employeeCount,
+            address,
+            phone,
+            email,
+            website,
+            logo,
+            intro,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM company
+        WHERE member_id = #{memberId}
+    </select>
+
+</mapper>
