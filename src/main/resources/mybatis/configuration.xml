@@ -2,16 +2,16 @@
 
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
 
-
 <configuration>
 
 	<typeAliases>
-		<!-- user -->
 		<typeAlias type="com.javaex.idea.vo.JobVo" alias="JobVo"/>
+		<typeAlias type="com.javaex.idea.vo.CompanyVo" alias="CompanyVo"/>
 	</typeAliases>
 
 	<mappers>
 		<mapper resource="mybatis/mappers/JobInformation.xml" />
+		<mapper resource="mybatis/mappers/CompanyPage.xml" />
 	</mappers>
 
 </configuration>
