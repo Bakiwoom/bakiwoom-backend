@@ -10,7 +10,7 @@ public class CompanyPageController {
 	
 	@GetMapping("/profile")
 	public String ping() {
-        return "pong";
+        return "ping";
     }
 
 }
