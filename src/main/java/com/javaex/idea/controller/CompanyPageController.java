@@ -100,5 +100,49 @@ public class CompanyPageController {
 	        return JsonResult.fail("회사 상세 정보 조회 중 오류가 발생했습니다.");
 	    }
 	}
+	
+	// 기업 정보 수정하기
+	@PostMapping("/company/update")
+    public JsonResult updateCompanyInfo(
+            HttpServletRequest request,
+            @RequestParam("name") String name,
+            @RequestParam("businessNumber") String businessNumber,
+            @RequestParam("businessType") String businessType,
+            @RequestParam("size") String size,
+            @RequestParam("foundingYear") String foundingYear,
+            @RequestParam("employeeCount") Integer employeeCount,
+            @RequestParam("address") String address,
+            @RequestParam("phone") String phone,
+            @RequestParam("email") String email,
+            @RequestParam(value = "website", required = false) String website,
+            @RequestParam(value = "intro", required = false) String intro,
+            @RequestParam(value = "logo", required = false) MultipartFile logo) {
+        
+        try {
+        	// 1. JWT 토큰에서 사용자 ID 가져오기
+            //Integer memberId = JwtUtil.getNoFromHeader(request);
+        	int memberId = 1; // (로그인 구현 전 임시값 사용)
+          
+            CompanyVo companyVo = new CompanyVo();
+            companyVo.setName(name);
+            companyVo.setBusinessNumber(businessNumber);
+            companyVo.setBusinessType(businessType);
+            companyVo.setSize(size);
+            companyVo.setFoundingYear(foundingYear);
+            companyVo.setEmployeeCount(employeeCount);
+            companyVo.setAddress(address);
+            companyVo.setPhone(phone);
+            companyVo.setEmail(email);
+            companyVo.setWebsite(website);
+            companyVo.setIntro(intro);
+            
+            companyPageService.updateCompany(companyVo, memberId, logo);
+            
+            return JsonResult.success(null);
+            
+        } catch (Exception e) {
+            return JsonResult.fail("회사 정보 수정 중 오류가 발생했습니다.");
+        }
+    }
 
 }

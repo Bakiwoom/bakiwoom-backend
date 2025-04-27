@@ -23,14 +23,13 @@ public class CompanyPageDao {
 		sqlSession.insert("company.insertCompany", map);
 	}
 
-	// 기업 정보 수정
-	public void updateCompany(CompanyVo companyVo) {
-		sqlSession.update("company.updateCompany", companyVo);
-	}
-
 	// 회원 ID로 기업 정보 조회
 	public CompanyVo getCompanyByMemberId(int memberId) {
 		return sqlSession.selectOne("company.getCompanyByMemberId", memberId);
 	}
 
+	// 기업 정보 수정
+	public void updateCompany(CompanyVo companyVo) {
+		sqlSession.update("company.updateCompany", companyVo);
+	}
 }
