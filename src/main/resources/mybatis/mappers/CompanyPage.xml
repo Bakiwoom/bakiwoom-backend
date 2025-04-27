@@ -39,25 +39,6 @@
         )
     </insert>
 
-    <!-- 기업 정보 수정 -->
-    <update id="updateCompany" parameterType="CompanyVo">
-        UPDATE company SET
-            name = #{name},
-            business_number = #{businessNumber},
-            business_type = #{businessType},
-            size = #{size},
-            founding_year = #{foundingYear},
-            employee_count = #{employeeCount},
-            address = #{address},
-            phone = #{phone},
-            email = #{email},
-            website = #{website},
-            logo = #{logo},
-            intro = #{intro},
-            updated_at = NOW()
-        WHERE company_id = #{companyId}
-    </update>
-
     <!-- 회원 ID로 기업 정보 조회 -->
     <select id="getCompanyByMemberId" parameterType="int" resultType="CompanyVo">
         SELECT 
@@ -79,5 +60,24 @@
         FROM company
         WHERE member_id = #{memberId}
     </select>
+    
+    <!-- 기업 정보 수정 -->
+    <update id="updateCompany" parameterType="CompanyVo">
+        UPDATE company SET
+            name = #{name},
+            business_number = #{businessNumber},
+            business_type = #{businessType},
+            size = #{size},
+            founding_year = #{foundingYear},
+            employee_count = #{employeeCount},
+            address = #{address},
+            phone = #{phone},
+            email = #{email},
+            website = #{website},
+            logo = #{logo},
+            intro = #{intro},
+            updated_at = NOW()
+        WHERE company_id = #{companyId}
+    </update>
 
 </mapper>
