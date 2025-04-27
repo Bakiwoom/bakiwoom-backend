@@ -2,6 +2,7 @@ package com.javaex.idea.vo;
 
 public class CompanyVo {
 	private int companyId;
+	private int memberId;
 	private String name;
 	private String businessNumber;
 	private String businessType;
@@ -17,10 +18,15 @@ public class CompanyVo {
 	private String createdAt;
 	private String updatedAt;
 
-	public CompanyVo(int companyId, String name, String businessNumber, String businessType, String size,
+	public CompanyVo() {
+
+	}
+
+	public CompanyVo(int companyId, int memberId, String name, String businessNumber, String businessType, String size,
 			String foundingYear, int employeeCount, String address, String phone, String email, String website,
 			String logo, String intro, String createdAt, String updatedAt) {
 		this.companyId = companyId;
+		this.memberId = memberId;
 		this.name = name;
 		this.businessNumber = businessNumber;
 		this.businessType = businessType;
@@ -37,16 +43,20 @@ public class CompanyVo {
 		this.updatedAt = updatedAt;
 	}
 
-	public CompanyVo() {
-		
-	}
-
 	public int getCompanyId() {
 		return companyId;
 	}
 
 	public void setCompanyId(int companyId) {
 		this.companyId = companyId;
+	}
+
+	public int getMemberId() {
+		return memberId;
+	}
+
+	public void setMemberId(int memberId) {
+		this.memberId = memberId;
 	}
 
 	public String getName() {
@@ -163,11 +173,11 @@ public class CompanyVo {
 
 	@Override
 	public String toString() {
-		return "CompanyVo [companyId=" + companyId + ", name=" + name + ", businessNumber=" + businessNumber
-				+ ", businessType=" + businessType + ", size=" + size + ", foundingYear=" + foundingYear
-				+ ", employeeCount=" + employeeCount + ", address=" + address + ", phone=" + phone + ", email=" + email
-				+ ", website=" + website + ", logo=" + logo + ", intro=" + intro + ", createdAt=" + createdAt
-				+ ", updatedAt=" + updatedAt + "]";
+		return "CompanyVo [companyId=" + companyId + ", memberId=" + memberId + ", name=" + name + ", businessNumber="
+				+ businessNumber + ", businessType=" + businessType + ", size=" + size + ", foundingYear="
+				+ foundingYear + ", employeeCount=" + employeeCount + ", address=" + address + ", phone=" + phone
+				+ ", email=" + email + ", website=" + website + ", logo=" + logo + ", intro=" + intro + ", createdAt="
+				+ createdAt + ", updatedAt=" + updatedAt + "]";
 	}
 
 }
