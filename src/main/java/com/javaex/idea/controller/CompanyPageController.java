@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -76,6 +77,28 @@ public class CompanyPageController {
 		} catch (Exception e) {
 			return JsonResult.fail("기업 정보 저장 중 오류가 발생했습니다.");
 		}
+	}
+	
+	// 기업 정보 가져오기
+	@GetMapping("/company/detail")
+	public JsonResult getCompanyDetail(HttpServletRequest request) {
+	    try {
+	        // 1. JWT 토큰에서 사용자 ID 가져오기
+	        //Integer memberId = JwtUtil.getNoFromHeader(request);
+	    	int memberId = 1; // (로그인 구현 전 임시값 사용)
+
+	        // 2. 회사 상세 정보 가져오기
+	        CompanyVo companyDetail = companyPageService.getCompanyDetail(memberId);
+	        
+	        if (companyDetail == null) {
+	            return JsonResult.fail("해당 회사 정보를 찾을 수 없습니다.");
+	        }
+	        
+	        return JsonResult.success(companyDetail);
+	        
+	    } catch (Exception e) {
+	        return JsonResult.fail("회사 상세 정보 조회 중 오류가 발생했습니다.");
+	    }
 	}
 
 }

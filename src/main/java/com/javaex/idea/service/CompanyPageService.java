@@ -25,5 +25,11 @@ public class CompanyPageService {
             companyPageDao.insertCompany(companyVo, memberId);
         }
     }
+	
+	// 기업 정보 가져오기
+	public CompanyVo getCompanyDetail(int memberId) {
+        // member_id로 회사 정보 조회
+        return companyPageDao.getCompanyByMemberId(memberId);
+    }
 
 }
