@@ -7,6 +7,7 @@
 	<typeAliases>
 		<typeAlias type="com.javaex.idea.vo.JobVo" alias="JobVo"/>
 		<typeAlias type="com.javaex.idea.vo.CompanyVo" alias="CompanyVo"/>
+		<typeAlias type="com.javaex.idea.vo.CompanyManagerVo" alias="CompanyManagerVo"/>
 	</typeAliases>
 
 	<mappers>
