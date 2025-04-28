@@ -7,6 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.javaex.idea.vo.CompanyManagerVo;
 import com.javaex.idea.vo.CompanyVo;
 
 @Repository
@@ -14,6 +15,11 @@ public class CompanyPageDao {
 
 	@Autowired
 	private SqlSession sqlSession;
+
+	// 회원 ID로 기업 정보 조회
+	public CompanyVo getCompanyByMemberId(int memberId) {
+		return sqlSession.selectOne("company.getCompanyByMemberId", memberId);
+	}
 
 	// 기업 정보 저장
 	public void insertCompany(CompanyVo companyVo, int memberId) {
@@ -23,13 +29,23 @@ public class CompanyPageDao {
 		sqlSession.insert("company.insertCompany", map);
 	}
 
-	// 회원 ID로 기업 정보 조회
-	public CompanyVo getCompanyByMemberId(int memberId) {
-		return sqlSession.selectOne("company.getCompanyByMemberId", memberId);
-	}
-
 	// 기업 정보 수정
 	public void updateCompany(CompanyVo companyVo) {
 		sqlSession.update("company.updateCompany", companyVo);
+	}
+
+	// 담당자 정보 등록
+	public void insertManager(CompanyManagerVo managerVo) {
+		sqlSession.insert("company.insertManager", managerVo);
+	}
+
+	// 기업 ID로 담당자 정보 조회
+	public CompanyManagerVo getManagerByCompanyId(int companyId) {
+		return sqlSession.selectOne("company.getManagerByCompanyId", companyId);
+	}
+
+	// 담당자 정보 수정
+	public void updateManager(CompanyManagerVo managerVo) {
+		sqlSession.update("company.updateManager", managerVo);
 	}
 }
