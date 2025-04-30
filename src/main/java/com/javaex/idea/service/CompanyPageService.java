@@ -1,9 +1,12 @@
 package com.javaex.idea.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.javaex.idea.dao.CompanyPageDao;
+import com.javaex.idea.vo.ApplicationVo;
 import com.javaex.idea.vo.CompanyManagerVo;
 import com.javaex.idea.vo.CompanyVo;
 import com.javaex.idea.vo.MemberVo;
@@ -131,14 +134,10 @@ public class CompanyPageService {
 	// 비밀번호 변경
 	public boolean changePassword(int memberId, String currentPassword, String newPassword) {
 		try {
-			System.out.println("서비스: changePassword 메서드 호출됨");
-			System.out.println("서비스: memberId = " + memberId);
-
 			// 현재 계정 정보 조회
 			MemberVo memberVo = companyPageDao.getMemberById(memberId);
 
 			if (memberVo == null) {
-				System.out.println("서비스: 계정 정보가 존재하지 않음");
 				throw new RuntimeException("계정 정보가 존재하지 않습니다.");
 			}
 
@@ -148,11 +147,8 @@ public class CompanyPageService {
 			// 실제 환경에서는 여기서 암호화된 비밀번호를 비교해야 합니다.
 			// 예: BCryptPasswordEncoder.matches(currentPassword, memberVo.getPassword())
 			if (!currentPassword.equals(memberVo.getPassword())) {
-				System.out.println("서비스: 현재 비밀번호 불일치");
 				return false; // 현재 비밀번호가 일치하지 않음
 			}
-
-			System.out.println("서비스: 새 비밀번호로 업데이트 중");
 
 			// 새 비밀번호 설정
 			// 실제 환경에서는 여기서 비밀번호를 암호화해야 합니다.
@@ -161,14 +157,16 @@ public class CompanyPageService {
 
 			// 비밀번호 업데이트
 			companyPageDao.updateMemberPassword(memberVo);
-
-			System.out.println("서비스: 비밀번호 변경 성공");
 			return true;
 		} catch (Exception e) {
-			System.out.println("서비스: 비밀번호 변경 중 오류 발생 = " + e.getMessage());
 			e.printStackTrace();
 			throw new RuntimeException("비밀번호 변경 중 오류가 발생했습니다.", e);
 		}
 	}
+	
+	// 회사 ID로 지원 내역 조회
+    public List<ApplicationVo> getApplicationsByCompanyId(int companyId) {
+        return companyPageDao.getApplicationsByCompanyId(companyId);
+    }
 
 }

@@ -1,12 +1,14 @@
 package com.javaex.idea.dao;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.javaex.idea.vo.ApplicationVo;
 import com.javaex.idea.vo.CompanyManagerVo;
 import com.javaex.idea.vo.CompanyVo;
 import com.javaex.idea.vo.MemberVo;
@@ -66,5 +68,10 @@ public class CompanyPageDao {
 			e.printStackTrace();
 			throw e;
 		}
+	}
+
+	// 회사 ID로 지원 내역 조회
+	public List<ApplicationVo> getApplicationsByCompanyId(int companyId) {
+		return sqlSession.selectList("company.getApplicationsByCompanyId", companyId);
 	}
 }
