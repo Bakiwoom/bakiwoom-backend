@@ -131,5 +131,25 @@
 	    updated_at = NOW()
 	WHERE manager_id = #{managerId}
 	</update>
+	
+	<!-- 회원 ID로 계정 정보 조회 -->
+	<select id="getMemberById" parameterType="int" resultType="MemberVo">
+	    SELECT
+	        member_id as memberId,
+	        id,
+	        password,
+	        role,
+	        state
+	    FROM member
+	    WHERE member_id = #{memberId}
+	</select>
+	
+	<!-- 비밀번호 변경 -->
+	<update id="updateMemberPassword" parameterType="MemberVo">
+	    UPDATE member SET
+	        password = #{password},
+	        updated_at = NOW()
+	    WHERE member_id = #{memberId}
+	</update>
 
 </mapper>

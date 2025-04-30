@@ -2,6 +2,7 @@ package com.javaex.idea.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import com.javaex.idea.service.S3Service;
 import com.javaex.idea.service.CompanyPageService;
 import com.javaex.idea.vo.CompanyManagerVo;
 import com.javaex.idea.vo.CompanyVo;
+import com.javaex.idea.vo.MemberVo;
 import com.javaex.util.JsonResult;
 import com.javaex.util.JwtUtil;
 
@@ -213,4 +215,69 @@ public class CompanyPageController {
 			return JsonResult.fail("담당자 정보 수정 중 오류가 발생했습니다: " + e.getMessage());
 		}
 	}
+
+	// 계정 정보 조회
+	@GetMapping("/account/detail")
+	public JsonResult getAccountDetail(HttpServletRequest request) {
+		try {
+			// 1. JWT 토큰에서 사용자 ID 가져오기
+			// Integer memberId = JwtUtil.getNoFromHeader(request);
+			int memberId = 1; // (로그인 구현 전 임시값 사용)
+
+			// 2. 계정 정보 가져오기
+			MemberVo accountDetail = companyPageService.getAccountDetail(memberId);
+
+			if (accountDetail == null) {
+				return JsonResult.fail("계정 정보를 찾을 수 없습니다.");
+			}
+
+			// 비밀번호 정보는 제외하고 반환
+			accountDetail.setPassword(null);
+
+			return JsonResult.success(accountDetail);
+
+		} catch (Exception e) {
+			return JsonResult.fail("계정 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
+		}
+	}
+
+	// 비밀번호 변경
+	@PostMapping("/account/password")
+	public JsonResult changePassword(@RequestBody Map<String, String> passwordData, HttpServletRequest request) {
+		try {
+			System.out.println("비밀번호 변경 API 호출됨");
+
+			// 1. JWT 토큰에서 사용자 ID 가져오기
+			// Integer memberId = JwtUtil.getNoFromHeader(request);
+			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			System.out.println("memberId: " + memberId);
+
+			// 2. 필수 필드 검증
+			String currentPassword = passwordData.get("currentPassword");
+			String newPassword = passwordData.get("newPassword");
+			System.out.println(
+					"요청 데이터 확인: currentPassword 길이=" + (currentPassword != null ? currentPassword.length() : 0));
+
+			if (currentPassword == null || currentPassword.trim().isEmpty() || newPassword == null
+					|| newPassword.trim().isEmpty()) {
+				return JsonResult.fail("현재 비밀번호와 새 비밀번호를 모두 입력해주세요.");
+			}
+
+			// 3. 서비스 호출하여 비밀번호 변경
+			boolean result = companyPageService.changePassword(memberId, currentPassword, newPassword);
+			System.out.println("비밀번호 변경 결과: " + result);
+
+			if (!result) {
+				return JsonResult.fail("현재 비밀번호가 일치하지 않습니다.");
+			}
+
+			return JsonResult.success("비밀번호가 성공적으로 변경되었습니다.");
+
+		} catch (Exception e) {
+			System.out.println("비밀번호 변경 중 오류 발생: " + e.getMessage());
+			e.printStackTrace();
+			return JsonResult.fail("비밀번호 변경 중 오류가 발생했습니다: " + e.getMessage());
+		}
+	}
+
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.javaex.idea.vo.CompanyManagerVo;
 import com.javaex.idea.vo.CompanyVo;
+import com.javaex.idea.vo.MemberVo;
 
 @Repository
 public class CompanyPageDao {
@@ -47,5 +48,23 @@ public class CompanyPageDao {
 	// 담당자 정보 수정
 	public void updateManager(CompanyManagerVo managerVo) {
 		sqlSession.update("company.updateManager", managerVo);
+	}
+
+	// 회원 ID로 계정 정보 조회
+	public MemberVo getMemberById(int memberId) {
+		return sqlSession.selectOne("company.getMemberById", memberId);
+	}
+
+	// 비밀번호 변경
+	public void updateMemberPassword(MemberVo memberVo) {
+		try {
+			int rows = sqlSession.update("company.updateMemberPassword", memberVo);
+			if (rows == 0) {
+				throw new RuntimeException("비밀번호 업데이트가 실행되지 않았습니다. 해당 회원이 존재하지 않을 수 있습니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 }
