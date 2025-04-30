@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.javaex.idea.dao.CompanyPageDao;
 import com.javaex.idea.vo.CompanyManagerVo;
 import com.javaex.idea.vo.CompanyVo;
+import com.javaex.idea.vo.MemberVo;
 
 @Service
 public class CompanyPageService {
@@ -115,6 +116,59 @@ public class CompanyPageService {
 	public void updateManager(CompanyManagerVo managerVo, int memberId) {
 		// saveManagerInfo 메서드와 동일한 기능이므로 그대로 호출만 함
 		saveManagerInfo(managerVo, memberId);
+	}
+
+	// 계정 정보 조회
+	public MemberVo getAccountDetail(int memberId) {
+		try {
+			// memberId로 계정 정보 조회
+			return companyPageDao.getMemberById(memberId);
+		} catch (Exception e) {
+			throw new RuntimeException("계정 정보 조회 중 오류가 발생했습니다.", e);
+		}
+	}
+
+	// 비밀번호 변경
+	public boolean changePassword(int memberId, String currentPassword, String newPassword) {
+		try {
+			System.out.println("서비스: changePassword 메서드 호출됨");
+			System.out.println("서비스: memberId = " + memberId);
+
+			// 현재 계정 정보 조회
+			MemberVo memberVo = companyPageDao.getMemberById(memberId);
+
+			if (memberVo == null) {
+				System.out.println("서비스: 계정 정보가 존재하지 않음");
+				throw new RuntimeException("계정 정보가 존재하지 않습니다.");
+			}
+
+			System.out.println("서비스: 현재 비밀번호 검증 중");
+
+			// 현재 비밀번호 확인
+			// 실제 환경에서는 여기서 암호화된 비밀번호를 비교해야 합니다.
+			// 예: BCryptPasswordEncoder.matches(currentPassword, memberVo.getPassword())
+			if (!currentPassword.equals(memberVo.getPassword())) {
+				System.out.println("서비스: 현재 비밀번호 불일치");
+				return false; // 현재 비밀번호가 일치하지 않음
+			}
+
+			System.out.println("서비스: 새 비밀번호로 업데이트 중");
+
+			// 새 비밀번호 설정
+			// 실제 환경에서는 여기서 비밀번호를 암호화해야 합니다.
+			// 예: String encodedPassword = bCryptPasswordEncoder.encode(newPassword);
+			memberVo.setPassword(newPassword);
+
+			// 비밀번호 업데이트
+			companyPageDao.updateMemberPassword(memberVo);
+
+			System.out.println("서비스: 비밀번호 변경 성공");
+			return true;
+		} catch (Exception e) {
+			System.out.println("서비스: 비밀번호 변경 중 오류 발생 = " + e.getMessage());
+			e.printStackTrace();
+			throw new RuntimeException("비밀번호 변경 중 오류가 발생했습니다.", e);
+		}
 	}
 
 }
