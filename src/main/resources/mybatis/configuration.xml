@@ -5,16 +5,18 @@
 <configuration>
 
 	<typeAliases>
-		<typeAlias type="com.javaex.idea.vo.JobVo" alias="JobVo"/>
 		<typeAlias type="com.javaex.idea.vo.CompanyVo" alias="CompanyVo"/>
 		<typeAlias type="com.javaex.idea.vo.CompanyManagerVo" alias="CompanyManagerVo"/>
 		<typeAlias type="com.javaex.idea.vo.MemberVo" alias="MemberVo"/>
 		<typeAlias type="com.javaex.idea.vo.ApplicationVo" alias="ApplicationVo"/>
+		<typeAlias type="com.javaex.idea.vo.JobPostingVo" alias="JobPostingVo"/>
+		<typeAlias type="com.javaex.idea.vo.BookmarkVo" alias="BookmarkVo"/>
 	</typeAliases>
 
 	<mappers>
 		<mapper resource="mybatis/mappers/JobInformation.xml" />
 		<mapper resource="mybatis/mappers/CompanyPage.xml" />
+		<mapper resource="mybatis/mappers/Main.xml" />
 	</mappers>
 
 </configuration>
