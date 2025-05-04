@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="signup">
+
+	<!-- 중복체크 -->
+	<select id="checkId" parameterType="String" resultType="int">
+	
+		<![CDATA[
+			select count(*) from member
+			where id = #{id}
+		]]>
+	
+	</select>
+
+	<!-- member등록 -->
+	<insert id="insertMember" parameterType="com.javaex.idea.vo.SignupVo" useGeneratedKeys="true" keyProperty="memberId">
+	
+		<![CDATA[
+			insert into member(id, password, role, state)
+			values (#{id}, #{pw}, #{role}, #{state})
+		]]>
+	
+	</insert>
+	
+	<!-- user등록 -->
+	<insert id="insertUser" parameterType="com.javaex.idea.vo.SignupVo">
+	
+		<![CDATA[
+			insert into user(member_id, name, phone_number, disability_type_id, is_verified, email, disability_image_url)
+			values (#{memberId}, #{name}, #{phoneNumber}, #{disabilityId}, 0, #{email}, #{disabilityURL})
+		]]>
+	
+	</insert>
+	
+	<!-- user장애번호 검색 -->
+	<select id="selectDisabilityId" parameterType="String" resultType="int">
+		
+		<![CDATA[
+			select id from disability_types
+			where disability_name = #{disabilityType}
+		]]>
+	
+	</select>
+	
+	<!-- company등록 -->
+	<insert id="insertCompany" parameterType="com.javaex.idea.vo.SignupVo">
+		
+		<![CDATA[
+			insert into company(member_id, name, business_number, business_license)
+			values (#{memberId}, #{companyName}, #{businessNumber}, #{businessLicense})
+		]]>
+		
+	</insert>
+	
+	<!-- 로그인 -->
+	<select id="login" parameterType="com.javaex.idea.vo.SignupVo" resultType="com.javaex.idea.vo.SignupVo">
+		
+		<![CDATA[
+			select member_id as memberId from member
+			where id = #{id}
+			and password = #{pw}
+		]]>
+		
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+</mapper>

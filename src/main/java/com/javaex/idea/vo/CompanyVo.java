@@ -17,6 +17,7 @@ public class CompanyVo {
 	private String intro;
 	private String createdAt;
 	private String updatedAt;
+	private String businessLicense;
 
 	public CompanyVo() {
 
@@ -24,7 +25,7 @@ public class CompanyVo {
 
 	public CompanyVo(int companyId, int memberId, String name, String businessNumber, String businessType, String size,
 			String foundingYear, int employeeCount, String address, String phone, String email, String website,
-			String logo, String intro, String createdAt, String updatedAt) {
+			String logo, String intro, String createdAt, String updatedAt, String businessLicense) {
 		this.companyId = companyId;
 		this.memberId = memberId;
 		this.name = name;
@@ -41,6 +42,7 @@ public class CompanyVo {
 		this.intro = intro;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.businessLicense = businessLicense;
 	}
 
 	public int getCompanyId() {
@@ -171,13 +173,22 @@ public class CompanyVo {
 		this.updatedAt = updatedAt;
 	}
 
+	public String getBusinessLicense() {
+		return businessLicense;
+	}
+
+	public void setBusinessLicense(String businessLicense) {
+		this.businessLicense = businessLicense;
+	}
+
 	@Override
 	public String toString() {
 		return "CompanyVo [companyId=" + companyId + ", memberId=" + memberId + ", name=" + name + ", businessNumber="
 				+ businessNumber + ", businessType=" + businessType + ", size=" + size + ", foundingYear="
 				+ foundingYear + ", employeeCount=" + employeeCount + ", address=" + address + ", phone=" + phone
 				+ ", email=" + email + ", website=" + website + ", logo=" + logo + ", intro=" + intro + ", createdAt="
-				+ createdAt + ", updatedAt=" + updatedAt + "]";
+				+ createdAt + ", updatedAt=" + updatedAt + ", businessLicense=" + businessLicense + "]";
 	}
+
 
 }
