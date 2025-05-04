@@ -17,6 +17,7 @@
 		<mapper resource="mybatis/mappers/JobInformation.xml" />
 		<mapper resource="mybatis/mappers/CompanyPage.xml" />
 		<mapper resource="mybatis/mappers/Main.xml" />
+		<mapper resource="mybatis/mappers/Signup.xml" />
 	</mappers>
 
 </configuration>
