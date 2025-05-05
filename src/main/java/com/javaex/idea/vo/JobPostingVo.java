@@ -24,6 +24,7 @@ public class JobPostingVo {
 	private String updatedAt;
 
 	// 조인 결과용 추가 필드
+	private String userName;
 	private String companyName;
 	private String companyLogo;
 	private String disabilityTypeName;
@@ -36,7 +37,7 @@ public class JobPostingVo {
 	public JobPostingVo(int jobId, int companyId, String title, String department, String status, String location,
 			String jobType, String employmentType, String experienceLevel, String experienceYears, String deadline,
 			String description, String requirements, String preferred, String disabilityType, int viewCount,
-			int applyCount, int bookmarkCount, String createdAt, String updatedAt, String companyName,
+			int applyCount, int bookmarkCount, String createdAt, String updatedAt, String userName, String companyName,
 			String companyLogo, String disabilityTypeName, double popularityScore) {
 		this.jobId = jobId;
 		this.companyId = companyId;
@@ -58,6 +59,7 @@ public class JobPostingVo {
 		this.bookmarkCount = bookmarkCount;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.userName = userName;
 		this.companyName = companyName;
 		this.companyLogo = companyLogo;
 		this.disabilityTypeName = disabilityTypeName;
@@ -224,6 +226,14 @@ public class JobPostingVo {
 		this.updatedAt = updatedAt;
 	}
 
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
 	public String getCompanyName() {
 		return companyName;
 	}
@@ -264,9 +274,9 @@ public class JobPostingVo {
 				+ experienceYears + ", deadline=" + deadline + ", description=" + description + ", requirements="
 				+ requirements + ", preferred=" + preferred + ", disabilityType=" + disabilityType + ", viewCount="
 				+ viewCount + ", applyCount=" + applyCount + ", bookmarkCount=" + bookmarkCount + ", createdAt="
-				+ createdAt + ", updatedAt=" + updatedAt + ", companyName=" + companyName + ", companyLogo="
-				+ companyLogo + ", disabilityTypeName=" + disabilityTypeName + ", popularityScore=" + popularityScore
-				+ "]";
+				+ createdAt + ", updatedAt=" + updatedAt + ", userName=" + userName + ", companyName=" + companyName
+				+ ", companyLogo=" + companyLogo + ", disabilityTypeName=" + disabilityTypeName + ", popularityScore="
+				+ popularityScore + "]";
 	}
 
 }
