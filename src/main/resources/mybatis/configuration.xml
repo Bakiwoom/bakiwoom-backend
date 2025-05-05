@@ -11,6 +11,7 @@
 		<typeAlias type="com.javaex.idea.vo.ApplicationVo" alias="ApplicationVo"/>
 		<typeAlias type="com.javaex.idea.vo.JobPostingVo" alias="JobPostingVo"/>
 		<typeAlias type="com.javaex.idea.vo.BookmarkVo" alias="BookmarkVo"/>
+		<typeAlias type="com.javaex.idea.vo.SignupVo" alias="SignupVo"/>
 	</typeAliases>
 
 	<mappers>

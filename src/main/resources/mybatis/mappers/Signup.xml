@@ -14,7 +14,7 @@
 	</select>
 
 	<!-- member등록 -->
-	<insert id="insertMember" parameterType="com.javaex.idea.vo.SignupVo" useGeneratedKeys="true" keyProperty="memberId">
+	<insert id="insertMember" parameterType="SignupVo" useGeneratedKeys="true" keyProperty="memberId">
 	
 		<![CDATA[
 			insert into member(id, password, role, state)
@@ -24,7 +24,7 @@
 	</insert>
 	
 	<!-- user등록 -->
-	<insert id="insertUser" parameterType="com.javaex.idea.vo.SignupVo">
+	<insert id="insertUser" parameterType="SignupVo">
 	
 		<![CDATA[
 			insert into user(member_id, name, phone_number, disability_type_id, is_verified, email, disability_image_url)
@@ -44,7 +44,7 @@
 	</select>
 	
 	<!-- company등록 -->
-	<insert id="insertCompany" parameterType="com.javaex.idea.vo.SignupVo">
+	<insert id="insertCompany" parameterType="SignupVo">
 		
 		<![CDATA[
 			insert into company(member_id, name, business_number, business_license)
@@ -54,7 +54,7 @@
 	</insert>
 	
 	<!-- 로그인 -->
-	<select id="login" parameterType="com.javaex.idea.vo.SignupVo" resultType="com.javaex.idea.vo.SignupVo">
+	<select id="login" parameterType="SignupVo" resultType="SignupVo">
 		
 		<![CDATA[
 			select member_id as memberId from member
