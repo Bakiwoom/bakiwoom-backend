@@ -16,6 +16,7 @@ import com.javaex.idea.service.MainService;
 import com.javaex.idea.vo.BookmarkVo;
 import com.javaex.idea.vo.JobPostingVo;
 import com.javaex.util.JsonResult;
+import com.javaex.util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -31,8 +32,8 @@ public class MainController {
     public JsonResult getRecommendedJobs(HttpServletRequest request) {
         try {
             // JWT 토큰에서 사용자 ID 가져오기
-            // Integer memberId = JwtUtil.getNoFromHeader(request);
-            int memberId = 1; // (로그인 구현 전 임시값 사용)
+            Integer memberId = JwtUtil.getNoFromHeader(request);
+            //int memberId = 1; // (로그인 구현 전 임시값 사용)
             
             List<JobPostingVo> jobs = mainService.getRecommendedJobs(memberId);
             
@@ -86,8 +87,8 @@ public class MainController {
     public JsonResult addBookmark(@RequestBody BookmarkVo bookmarkVo, HttpServletRequest request) {
         try {
             // JWT 토큰에서 사용자 ID 가져오기
-            // Integer memberId = JwtUtil.getNoFromHeader(request);
-            int memberId = 1; // (로그인 구현 전 임시값 사용)
+            Integer memberId = JwtUtil.getNoFromHeader(request);
+            //int memberId = 1; // (로그인 구현 전 임시값 사용)
             
             bookmarkVo.setUserId(memberId);
             boolean result = mainService.addBookmark(bookmarkVo);
@@ -108,8 +109,8 @@ public class MainController {
     public JsonResult removeBookmark(@PathVariable int jobId, HttpServletRequest request) {
         try {
             // JWT 토큰에서 사용자 ID 가져오기
-            // Integer memberId = JwtUtil.getNoFromHeader(request);
-            int memberId = 1; // (로그인 구현 전 임시값 사용)
+            Integer memberId = JwtUtil.getNoFromHeader(request);
+            //int memberId = 1; // (로그인 구현 전 임시값 사용)
             
             boolean result = mainService.removeBookmark(memberId, jobId);
             
@@ -129,8 +130,8 @@ public class MainController {
     public JsonResult getUserBookmarks(HttpServletRequest request) {
         try {
             // JWT 토큰에서 사용자 ID 가져오기
-            // Integer memberId = JwtUtil.getNoFromHeader(request);
-            int memberId = 1; // (로그인 구현 전 임시값 사용)
+            Integer memberId = JwtUtil.getNoFromHeader(request);
+            //int memberId = 1; // (로그인 구현 전 임시값 사용)
             
             List<BookmarkVo> bookmarks = mainService.getUserBookmarks(memberId);
             
