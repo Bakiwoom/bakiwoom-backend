@@ -38,6 +38,7 @@ public class JwtUtil {
 	// 토큰 응답해더 등록
 	private static void addResponseHeaderToken(HttpServletResponse response, String token) {
 		response.addHeader("Authorization", "Bearer " + token);
+		//System.out.println(token+"등록완?");
 	}
 
 	////////////////////////////////////////////////////////
