@@ -134,23 +134,36 @@ public class SignupService {
 	};
 	
 	//로그인시 멤버 정보가져오기
-	public String exeGetMemberData(int memberId) {
+	public SignupVo exeGetMemberData(int memberId) {
 		
 		// 1.role 가져오기
 		String role = signupDao.getRole(memberId);
 		
 		if(role.equals("user")) {
 			
+			SignupVo userVo = new SignupVo();
+			
 			String name = signupDao.getUser(memberId);
-			return name;
+			
+			userVo.setName(name);
+			userVo.setRole(role);
+			
+			return userVo;
 			
 		}else if(role.equals("company")) {
+			
+			SignupVo companyVo = new SignupVo();
+			
 			String name = signupDao.getCompany(memberId);
-			return name;
+			
+			companyVo.setName(name);
+			companyVo.setRole(role);
+			
+			return companyVo;
 			
 		}else {
 			System.out.println("role정보가 없습니다.");
-			return "";
+			return null;
 		}
 	};
 
