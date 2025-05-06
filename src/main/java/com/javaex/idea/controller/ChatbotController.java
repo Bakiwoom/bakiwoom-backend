@@ -17,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class ChatbotController {
     private static final Logger logger = LoggerFactory.getLogger(ChatbotController.class);
-    private final RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
     
     @Value("${ai.server.url}")
     private String aiServerUrl;

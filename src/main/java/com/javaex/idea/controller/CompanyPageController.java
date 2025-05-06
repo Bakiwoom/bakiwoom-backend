@@ -39,8 +39,8 @@ public class CompanyPageController {
 	public JsonResult getCompanyDetail(HttpServletRequest request) {
 		try {
 			// 1. JWT 토큰에서 사용자 ID 가져오기
-			// Integer memberId = JwtUtil.getNoFromHeader(request);
-			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+			//int memberId = 1; // (로그인 구현 전 임시값 사용)
 
 			// 2. 회사 상세 정보 가져오기
 			CompanyVo companyDetail = companyPageService.getCompanyDetail(memberId);
@@ -68,8 +68,8 @@ public class CompanyPageController {
 
 		try {
 			// 1. 토큰에서 사용자 ID 추출
-			// int memberId = JwtUtil.getNoFromHeader(request);
-			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			int memberId = JwtUtil.getNoFromHeader(request);
+			//int memberId = 1; // (로그인 구현 전 임시값 사용)
 
 			// 2. CompanyVo 객체 생성 및 데이터 설정
 			CompanyVo companyVo = new CompanyVo();
@@ -118,8 +118,8 @@ public class CompanyPageController {
 
 		try {
 			// 1. JWT 토큰에서 사용자 ID 가져오기
-			// Integer memberId = JwtUtil.getNoFromHeader(request);
-			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+			//int memberId = 1; // (로그인 구현 전 임시값 사용)
 
 			CompanyVo companyVo = new CompanyVo();
 			companyVo.setName(name);
@@ -148,8 +148,8 @@ public class CompanyPageController {
 	public JsonResult getManagerDetail(HttpServletRequest request) {
 		try {
 			// 1. JWT 토큰에서 사용자 ID 가져오기
-			// Integer memberId = JwtUtil.getNoFromHeader(request);
-			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+			//int memberId = 1; // (로그인 구현 전 임시값 사용)
 
 			// 2. 담당자 정보 가져오기
 			CompanyManagerVo managerDetail = companyPageService.getManagerDetail(memberId);
@@ -170,8 +170,8 @@ public class CompanyPageController {
 	public JsonResult createManager(@RequestBody CompanyManagerVo managerVo, HttpServletRequest request) {
 		try {
 			// 1. JWT 토큰에서 사용자 ID 가져오기
-			// Integer memberId = JwtUtil.getNoFromHeader(request);
-			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+			//int memberId = 1; // (로그인 구현 전 임시값 사용)
 
 			// 2. 필수 필드 검증
 			if (managerVo.getName() == null || managerVo.getName().trim().isEmpty() || managerVo.getPosition() == null
@@ -195,8 +195,8 @@ public class CompanyPageController {
 	public JsonResult updateManager(@RequestBody CompanyManagerVo managerVo, HttpServletRequest request) {
 		try {
 			// 1. JWT 토큰에서 사용자 ID 가져오기
-			// Integer memberId = JwtUtil.getNoFromHeader(request);
-			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+			//int memberId = 1; // (로그인 구현 전 임시값 사용)
 
 			// 2. 필수 필드 검증
 			if (managerVo.getName() == null || managerVo.getName().trim().isEmpty() || managerVo.getPosition() == null
@@ -221,8 +221,8 @@ public class CompanyPageController {
 	public JsonResult getAccountDetail(HttpServletRequest request) {
 		try {
 			// 1. JWT 토큰에서 사용자 ID 가져오기
-			// Integer memberId = JwtUtil.getNoFromHeader(request);
-			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+			//int memberId = 1; // (로그인 구현 전 임시값 사용)
 
 			// 2. 계정 정보 가져오기
 			MemberVo accountDetail = companyPageService.getAccountDetail(memberId);
@@ -246,8 +246,8 @@ public class CompanyPageController {
 	public JsonResult changePassword(@RequestBody Map<String, String> passwordData, HttpServletRequest request) {
 		try {
 			// 1. JWT 토큰에서 사용자 ID 가져오기
-			// Integer memberId = JwtUtil.getNoFromHeader(request);
-			int memberId = 1; // (로그인 구현 전 임시값 사용)
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+			//int memberId = 1; // (로그인 구현 전 임시값 사용)
 
 			// 2. 필수 필드 검증
 			String currentPassword = passwordData.get("currentPassword");
@@ -279,8 +279,8 @@ public class CompanyPageController {
     public JsonResult getApplications(HttpServletRequest request) {
         try {
             // 1. JWT 토큰에서 사용자 ID 가져오기
-            // Integer memberId = JwtUtil.getNoFromHeader(request);
-            int memberId = 1; // (로그인 구현 전 임시값 사용)
+            Integer memberId = JwtUtil.getNoFromHeader(request);
+            //int memberId = 1; // (로그인 구현 전 임시값 사용)
             
             // 2. 회원 ID로 회사 정보 조회
             CompanyVo companyVo = companyPageService.getCompanyDetail(memberId);
