@@ -100,10 +100,10 @@ public class SignupController {
 	//로그인시 회원정보 가져오기
 	@GetMapping(value="/api/member/data/{memberId}")
 	public JsonResult getMemberData(@PathVariable ("memberId") int memberId) {
-		String name = signupService.exeGetMemberData(memberId);
+		SignupVo loginMemberVo = signupService.exeGetMemberData(memberId);
 		
-		if(name != null && !name.isEmpty()) {
-			return JsonResult.success(name);
+		if(loginMemberVo != null) {
+			return JsonResult.success(loginMemberVo);
 		}else {
 			return JsonResult.fail("회원이름 가져오기 실패");
 		}
