@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -88,6 +89,18 @@ public class SignupController {
 	        
 		}else {
 			return JsonResult.fail("로그인 실패");
+		}
+	};
+	
+	//로그인시 회원정보 가져오기
+	@GetMapping(value="/api/member/data/{memberId}")
+	public JsonResult getMemberData(@PathVariable ("memberId") int memberId) {
+		String name = signupService.exeGetMemberData(memberId);
+		
+		if(name != null && !name.isEmpty()) {
+			return JsonResult.success(name);
+		}else {
+			return JsonResult.fail("회원이름 가져오기 실패");
 		}
 	};
 	

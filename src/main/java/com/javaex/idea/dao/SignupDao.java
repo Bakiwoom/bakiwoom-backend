@@ -48,5 +48,27 @@ public class SignupDao {
 		return authUser;
 	};
 	
+	//로그인맴버 정보 가져오기 (role)
+	public String getRole(int memberId) {
+		String role = sqlSession.selectOne("signup.getRole",memberId);
+		return role;
+	};
+	
+	//로그인 > user
+	public String getUser(int memberId) {
+		String name = sqlSession.selectOne("signup.loginUser",memberId);
+		return name;
+	};
+	
+	//로그인 > company
+	public String getCompany(int memberId) {
+		String name = sqlSession.selectOne("signup.loginCompany",memberId);
+		return name;
+	};
+	
+	
+	
+	
+	
 	
 }

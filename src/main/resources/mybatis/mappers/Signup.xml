@@ -64,6 +64,39 @@
 		
 	</select>
 	
+	<!-- memberId로 role가져오 -->
+	<select id="getRole" parameterType="int" resultType="String">
+		
+		<![CDATA[
+			select role
+			from member
+			where member_id = #{memberId}
+		]]>
+		
+	</select>
+	
+	<!-- login > user -->
+	<select id="loginUser" parameterType="int" resultType="String">
+		
+		<![CDATA[
+			select name
+			from user
+			where member_id = #{memberId}
+		]]>
+		
+	</select>
+	
+	<!-- login > company -->
+	<select id="loginCompany" parameterType="int" resultType="String">
+		
+		<![CDATA[
+			select name
+			from company
+			where member_id = #{memberId}
+		]]>
+		
+	</select>
+	
 	
 	
 	

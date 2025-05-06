@@ -15,7 +15,7 @@ public class JwtUtil {
 
 	// 필드
 	private static final String SECRET_KEY = "1234"; // 비밀키, 실제 환경에서는 보다 복잡하고 안전한 키 사용 권장
-	private static final long EXPIRE_TIME = 1000 * 60 * 60; // 토큰 유효 시간(여기서는 1시간으로 설정)
+	private static final long EXPIRE_TIME = 1000 * 60 * 60 * 6; // 토큰 유효 시간(여기서는 1시간으로 설정)
 
 	// 생성자 기본생성자 생략
 
