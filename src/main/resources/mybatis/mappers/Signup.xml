@@ -54,12 +54,45 @@
 	</insert>
 	
 	<!-- 로그인 -->
-	<select id="login" parameterType="SignupVo" resultType="com.javaex.idea.vo.SignupVo">
+	<select id="login" parameterType="SignupVo" resultType="SignupVo">
 		
 		<![CDATA[
 			select member_id as memberId from member
 			where id = #{id}
 			and password = #{pw}
+		]]>
+		
+	</select>
+	
+	<!-- memberId로 role가져오 -->
+	<select id="getRole" parameterType="int" resultType="String">
+		
+		<![CDATA[
+			select role
+			from member
+			where member_id = #{memberId}
+		]]>
+		
+	</select>
+	
+	<!-- login > user -->
+	<select id="loginUser" parameterType="int" resultType="String">
+		
+		<![CDATA[
+			select name
+			from user
+			where member_id = #{memberId}
+		]]>
+		
+	</select>
+	
+	<!-- login > company -->
+	<select id="loginCompany" parameterType="int" resultType="String">
+		
+		<![CDATA[
+			select name
+			from company
+			where member_id = #{memberId}
 		]]>
 		
 	</select>

@@ -120,5 +120,30 @@ public class SignupService {
 		SignupVo authUser = signupDao.login(loginVo);
 		return authUser;
 	};
+	
+	//로그인시 멤버 정보가져오기
+	public String exeGetMemberData(int memberId) {
+		
+		// 1.role 가져오기
+		String role = signupDao.getRole(memberId);
+		
+		if(role.equals("user")) {
+			
+			String name = signupDao.getUser(memberId);
+			return name;
+			
+		}else if(role.equals("company")) {
+			String name = signupDao.getCompany(memberId);
+			return name;
+			
+		}else {
+			System.out.println("role정보가 없습니다.");
+			return "";
+		}
+	};
 
+	
+	
+	
+	
 };
