@@ -6,12 +6,13 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.lang.NonNull;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
 	@Override
-	public void addCorsMappings(CorsRegistry registry) {
+	public void addCorsMappings(@NonNull CorsRegistry registry) {
 	    registry.addMapping("/**")
 	        .allowedOriginPatterns("*","http://localhost:3000") // 모든 출처 허용 (특정 패턴 사용 가능)
 	        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
@@ -21,7 +22,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	}
 
 	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+	public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
 
 		String saveDir;
 		String osName = System.getProperty("os.name").toLowerCase();
