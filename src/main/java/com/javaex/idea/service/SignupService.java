@@ -3,6 +3,7 @@ package com.javaex.idea.service;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,18 @@ public class SignupService {
 	//회원가입
 	public int exeSignup(Map<String, Object> signupDataMap) {
 		
-		Map<String, String> dataVo = (Map<String, String>) signupDataMap.get("dataVo");
+		Object dataVoObj = signupDataMap.get("dataVo");
+		Map<String, String> dataVo = null;
+		if (dataVoObj instanceof Map<?, ?> map) {
+		    dataVo = map.entrySet().stream()
+		        .collect(Collectors.toMap(
+		            e -> String.valueOf(e.getKey()),
+		            e -> String.valueOf(e.getValue())
+		        ));
+		}
+		if (dataVo == null) {
+		    throw new IllegalArgumentException("dataVo가 null입니다.");
+		}
 		MultipartFile disabilityImageURL = (MultipartFile) signupDataMap.get("disabilityImageURL");
 		MultipartFile businessLicenseImg = (MultipartFile) signupDataMap.get("businessLicenseImg");
 		

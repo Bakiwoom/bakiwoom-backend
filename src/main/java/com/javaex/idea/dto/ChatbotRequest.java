@@ -6,4 +6,12 @@ import lombok.Data;
 public class ChatbotRequest {
     private String text;
     private String expert_type;
+    
+    public String getExpert_type() {
+        return expert_type;
+    }
+    
+    public String getText() {
+        return text;
+    }
 } 

@@ -57,9 +57,17 @@
 	<select id="login" parameterType="SignupVo" resultType="SignupVo">
 		
 		<![CDATA[
-			select member_id as memberId from member
-			where id = #{id}
-			and password = #{pw}
+			select 
+				m.member_id as memberId,
+				m.id,
+				m.password as pw,
+				m.role,
+				m.state,
+				c.name as companyName
+			from member m
+			left join company c on m.member_id = c.member_id
+			where m.id = #{id}
+			and m.password = #{pw}
 		]]>
 		
 	</select>
