@@ -8,4 +8,8 @@ import java.util.Map;
 public class ConversationRequest {
     private List<Map<String, String>> messages;
     private String expert_type;
+
+    public String getExpert_type() {
+        return expert_type;
+    }
 } 
