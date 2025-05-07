@@ -12,6 +12,7 @@
 		<typeAlias type="com.javaex.idea.vo.JobPostingVo" alias="JobPostingVo"/>
 		<typeAlias type="com.javaex.idea.vo.BookmarkVo" alias="BookmarkVo"/>
 		<typeAlias type="com.javaex.idea.vo.SignupVo" alias="SignupVo"/>
+		<typeAlias type="com.javaex.idea.vo.UserVo" alias="UserVo"/>
 	</typeAliases>
 
 	<mappers>
@@ -20,6 +21,7 @@
 		<mapper resource="mybatis/mappers/Main.xml" />
 		<mapper resource="mybatis/mappers/Signup.xml" />
 		<mapper resource="mybatis/mappers/Disability.xml" />
+		<mapper resource="mybatis/mappers/UserMypage.xml" />
 	</mappers>
 
 </configuration>
