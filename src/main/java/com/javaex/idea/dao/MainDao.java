@@ -14,6 +14,11 @@ public class MainDao {
 
 	@Autowired
 	private SqlSession sqlSession;
+	
+	// member_id로 user_id 조회
+	public Integer getUserIdByMemberId(int memberId) {
+	    return sqlSession.selectOne("main.getUserIdByMemberId", memberId);
+	}
 
 	// 맞춤 공고 조회
 	public List<JobPostingVo> getRecommendedJobs(int memberId) {
