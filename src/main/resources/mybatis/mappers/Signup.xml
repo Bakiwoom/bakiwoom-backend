@@ -64,7 +64,7 @@
 		
 	</select>
 	
-	<!-- memberId로 role가져오 -->
+	<!-- memberId로 role 가져오기 -->
 	<select id="getRole" parameterType="int" resultType="String">
 		
 		<![CDATA[
@@ -76,10 +76,11 @@
 	</select>
 	
 	<!-- login > user -->
-	<select id="loginUser" parameterType="int" resultType="String">
+	<select id="loginUser" parameterType="int" resultType="SignupVo">
 		
 		<![CDATA[
 			select name
+				  ,user_id as userId
 			from user
 			where member_id = #{memberId}
 		]]>
@@ -87,15 +88,18 @@
 	</select>
 	
 	<!-- login > company -->
-	<select id="loginCompany" parameterType="int" resultType="String">
+	<select id="loginCompany" parameterType="int" resultType="SignupVo">
 		
 		<![CDATA[
 			select name
+				  ,company_id as companyId
 			from company
 			where member_id = #{memberId}
 		]]>
 		
 	</select>
+	
+	
 	
 	
 	
