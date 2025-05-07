@@ -94,10 +94,6 @@ public class MainController {
 				return JsonResult.fail("사용자 정보를 찾을 수 없습니다.");
 			}
 
-			// 디버깅 로그 추가
-			System.out.println(
-					"북마크 추가 - memberId: " + memberId + ", userId: " + userId + ", jobId: " + bookmarkVo.getJobId());
-
 			bookmarkVo.setUserId(userId); // memberId가 아닌 userId 설정
 			boolean result = mainService.addBookmark(bookmarkVo);
 
@@ -126,9 +122,6 @@ public class MainController {
 				return JsonResult.fail("사용자 정보를 찾을 수 없습니다.");
 			}
 
-			// 디버깅 로그 추가
-			System.out.println("북마크 삭제 - memberId: " + memberId + ", userId: " + userId + ", jobId: " + jobId);
-
 			boolean result = mainService.removeBookmark(userId, jobId);
 
 			if (!result) {
@@ -156,17 +149,11 @@ public class MainController {
 				return JsonResult.fail("사용자 정보를 찾을 수 없습니다.");
 			}
 
-			// 디버깅 로그 추가
-			System.out.println("북마크 목록 조회 - memberId: " + memberId + ", userId: " + userId);
-
 			List<BookmarkVo> bookmarks = mainService.getUserBookmarks(userId);
 
 			if (bookmarks == null) {
 				return JsonResult.success(new ArrayList<>()); // 빈 리스트 반환
 			}
-
-			// 디버깅 로그 추가
-			System.out.println("조회된 북마크 수: " + bookmarks.size());
 
 			return JsonResult.success(bookmarks);
 
