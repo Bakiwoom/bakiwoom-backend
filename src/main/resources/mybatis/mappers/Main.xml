@@ -4,11 +4,20 @@
 
 <mapper namespace="main">
 
+	<!-- member_id로 user_id 조회 -->
+	<select id="getUserIdByMemberId" parameterType="int" resultType="int">
+	    SELECT u.user_id
+	    FROM member m
+	    INNER JOIN user u ON m.member_id = u.member_id
+	    WHERE m.member_id = #{memberId}
+	</select>
+	
 	<!-- 맞춤 공고 조회 -->
-    <select id="getRecommendedJobs" parameterType="int" resultType="JobPostingVo">
-        SELECT jp.job_id AS jobId,
+	<select id="getRecommendedJobs" parameterType="int" resultType="JobPostingVo">
+		SELECT jp.job_id AS jobId,
 		       jp.company_id AS companyId,
 		       u.name AS userName,
+		       m.role,
 		       jp.title,
 		       jp.location,
 		       jp.experience_level AS experienceLevel,
@@ -19,16 +28,17 @@
 		       dt.disability_name AS disabilityTypeName
 		FROM job_posting jp
 		JOIN company c ON jp.company_id = c.company_id
-		LEFT JOIN disability_types dt ON jp.disability_type = dt.id
-		LEFT JOIN user u ON u.user_id = 1  -- 특정 사용자를 조인 (여기서는 user_id = 1)
+		LEFT JOIN disability_types dt ON jp.disability_type_id = dt.id
+		LEFT JOIN user u ON u.user_id = #{value}
+		LEFT JOIN member m ON u.member_id = m.member_id
 		WHERE jp.status = 'open'
 		AND jp.deadline >= CURRENT_DATE
-		AND (jp.disability_type IS NULL 
-		     OR jp.disability_type = (SELECT disability_type_id FROM user WHERE user_id = #{value}))
+		AND (jp.disability_type_id IS NULL
+		     OR jp.disability_type_id = (SELECT disability_type_id FROM user WHERE user_id = #{value}))
 		ORDER BY jp.created_at DESC
 		LIMIT 4
-    </select>
-    
+	</select>
+	
     <!-- 인기 공고 조회 -->
     <select id="getPopularJobs" resultType="JobPostingVo">
         SELECT jp.job_id AS jobId,
@@ -44,7 +54,7 @@
                (jp.view_count * 0.3 + jp.apply_count * 0.5 + jp.bookmark_count * 0.2) AS popularityScore
         FROM job_posting jp
         JOIN company c ON jp.company_id = c.company_id
-        LEFT JOIN disability_types dt ON jp.disability_type = dt.id
+        LEFT JOIN disability_types dt ON jp.disability_type_id = dt.id
         WHERE jp.status = 'open'
         AND jp.deadline >= CURRENT_DATE
         ORDER BY popularityScore DESC
@@ -65,7 +75,7 @@
                dt.disability_name AS disabilityTypeName
         FROM job_posting jp
         JOIN company c ON jp.company_id = c.company_id
-        LEFT JOIN disability_types dt ON jp.disability_type = dt.id
+        LEFT JOIN disability_types dt ON jp.disability_type_id = dt.id
         WHERE jp.status = 'open'
         AND jp.deadline >= CURRENT_DATE
         AND jp.created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY)
@@ -110,18 +120,20 @@
     <!-- ========== 카운트 업데이트 관련 쿼리 ========== -->
     
     <!-- 북마크 카운트 증가 -->
-    <update id="increaseBookmarkCount" parameterType="int">
-        UPDATE job_posting
-        SET bookmark_count = bookmark_count + 1
-        WHERE job_id = #{value}
-    </update>
-    
-    <!-- 북마크 카운트 감소 -->
-    <update id="decreaseBookmarkCount" parameterType="int">
-        UPDATE job_posting
-        SET bookmark_count = bookmark_count - 1
-        WHERE job_id = #{value}
-        AND bookmark_count > 0
-    </update>
+	<update id="increaseBookmarkCount" parameterType="int">
+	    UPDATE job_posting
+	    SET bookmark_count = bookmark_count + 1
+	    WHERE job_id = #{jobId}
+	</update>
+	
+	<!-- 북마크 카운트 감소 -->
+	<update id="decreaseBookmarkCount" parameterType="int">
+	    UPDATE job_posting
+	    SET bookmark_count = CASE
+	        WHEN bookmark_count > 0 THEN bookmark_count - 1
+	        ELSE 0
+	    END
+	    WHERE job_id = #{jobId}
+	</update>
 
 </mapper>

@@ -30,6 +30,7 @@ public class JobPostingVo {
 	private String companyLogo;
 	private String disabilityTypeName;
 	private double popularityScore;
+	private String role;
 
 	public JobPostingVo() {
 
@@ -39,8 +40,7 @@ public class JobPostingVo {
 			String location, String jobType, String employmentType, String experienceLevel, String experienceYears,
 			String deadline, String description, String requirements, String preferred, String disabilityType,
 			int viewCount, int applyCount, int bookmarkCount, String createdAt, String updatedAt, String userName,
-			String companyName, String companyLogo, String disabilityTypeName, double popularityScore) {
-		super();
+			String companyName, String companyLogo, String disabilityTypeName, double popularityScore, String role) {
 		this.jobId = jobId;
 		this.companyId = companyId;
 		this.userId = userId;
@@ -67,9 +67,8 @@ public class JobPostingVo {
 		this.companyLogo = companyLogo;
 		this.disabilityTypeName = disabilityTypeName;
 		this.popularityScore = popularityScore;
+		this.role = role;
 	}
-
-
 
 	public int getJobId() {
 		return jobId;
@@ -86,7 +85,7 @@ public class JobPostingVo {
 	public void setCompanyId(int companyId) {
 		this.companyId = companyId;
 	}
-	
+
 	public int getUserId() {
 		return userId;
 	}
@@ -279,6 +278,14 @@ public class JobPostingVo {
 		this.popularityScore = popularityScore;
 	}
 
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
 	@Override
 	public String toString() {
 		return "JobPostingVo [jobId=" + jobId + ", companyId=" + companyId + ", userId=" + userId + ", title=" + title
@@ -289,9 +296,7 @@ public class JobPostingVo {
 				+ ", viewCount=" + viewCount + ", applyCount=" + applyCount + ", bookmarkCount=" + bookmarkCount
 				+ ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", userName=" + userName + ", companyName="
 				+ companyName + ", companyLogo=" + companyLogo + ", disabilityTypeName=" + disabilityTypeName
-				+ ", popularityScore=" + popularityScore + "]";
+				+ ", popularityScore=" + popularityScore + ", role=" + role + "]";
 	}
-
-	
 
 }
