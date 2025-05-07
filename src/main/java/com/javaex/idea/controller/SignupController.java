@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -77,17 +78,34 @@ public class SignupController {
 	//로그인
 	@PostMapping(value="/api/login")
 	public JsonResult login(@RequestBody SignupVo loginVo, HttpServletResponse response) {
-		
 		SignupVo authUser = signupService.exeLogin(loginVo);
-		
 		if(authUser != null && authUser.getMemberId() != 0) {
-			
-			/// JWT 토큰 생성 및 반환
+			// JWT 토큰 생성 및 반환
 			JwtUtil.createTokenAndSetHeader(response, "" + authUser.getMemberId());
-			return JsonResult.success(authUser);
-	        
+
+            // userName 필드 추가 (일반회원: name, 기업회원: companyName)
+            Map<String, Object> result = new HashMap<>();
+            result.put("memberId", authUser.getMemberId());
+            result.put("role", authUser.getRole());
+            String userName = (authUser.getRole() != null && authUser.getRole().equals("company")) ? authUser.getCompanyName() : authUser.getName();
+            result.put("userName", userName);
+            // 필요시 기타 정보 추가
+
+			return JsonResult.success(result);
 		}else {
 			return JsonResult.fail("로그인 실패");
+		}
+	};
+	
+	//로그인시 회원정보 가져오기
+	@GetMapping(value="/api/member/data/{memberId}")
+	public JsonResult getMemberData(@PathVariable ("memberId") int memberId) {
+		SignupVo loginMemberVo = signupService.exeGetMemberData(memberId);
+		
+		if(loginMemberVo != null) {
+			return JsonResult.success(loginMemberVo);
+		}else {
+			return JsonResult.fail("회원이름 가져오기 실패");
 		}
 	};
 	

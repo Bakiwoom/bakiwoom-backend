@@ -3,6 +3,7 @@ package com.javaex.idea.service;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,18 @@ public class SignupService {
 	//회원가입
 	public int exeSignup(Map<String, Object> signupDataMap) {
 		
-		Map<String, String> dataVo = (Map<String, String>) signupDataMap.get("dataVo");
+		Object dataVoObj = signupDataMap.get("dataVo");
+		Map<String, String> dataVo = null;
+		if (dataVoObj instanceof Map<?, ?> map) {
+		    dataVo = map.entrySet().stream()
+		        .collect(Collectors.toMap(
+		            e -> String.valueOf(e.getKey()),
+		            e -> String.valueOf(e.getValue())
+		        ));
+		}
+		if (dataVo == null) {
+		    throw new IllegalArgumentException("dataVo가 null입니다.");
+		}
 		MultipartFile disabilityImageURL = (MultipartFile) signupDataMap.get("disabilityImageURL");
 		MultipartFile businessLicenseImg = (MultipartFile) signupDataMap.get("businessLicenseImg");
 		
@@ -120,5 +132,36 @@ public class SignupService {
 		SignupVo authUser = signupDao.login(loginVo);
 		return authUser;
 	};
+	
+	//로그인시 멤버 정보가져오기
+	public SignupVo exeGetMemberData(int memberId) {
+		
+		// 1.role 가져오기
+		String role = signupDao.getRole(memberId);
+		
+		if(role.equals("user")) {
+			
+			SignupVo userVo = signupDao.getUser(memberId);
+			userVo.setRole(role);
+			
+			return userVo;
+			
+		}else if(role.equals("company")) {
+			
+			SignupVo companyVo = signupDao.getCompany(memberId);
+			
+			companyVo.setRole(role);
+			
+			return companyVo;
+			
+		}else {
+			System.out.println("role정보가 없습니다.");
+			return null;
+		}
+	};
 
+	
+	
+	
+	
 };

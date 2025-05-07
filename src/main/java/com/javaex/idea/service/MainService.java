@@ -15,9 +15,21 @@ public class MainService {
 	@Autowired
 	private MainDao mainDao;
 
-	// 맞춤 공고 조회
+	// member_id로 user_id 조회 - 맨 위에 추가
+	public Integer getUserIdByMemberId(int memberId) {
+		return mainDao.getUserIdByMemberId(memberId);
+	}
+
+	// 맞춤 공고 조회 - 기존 메소드 수정
 	public List<JobPostingVo> getRecommendedJobs(int memberId) {
-		return mainDao.getRecommendedJobs(memberId);
+		// member_id로 user_id 조회
+		Integer userId = getUserIdByMemberId(memberId);
+
+		if (userId == null) {
+			return null; // 사용자 정보가 없는 경우
+		}
+
+		return mainDao.getRecommendedJobs(userId);
 	}
 
 	// 인기 공고 조회
