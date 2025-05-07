@@ -19,6 +19,7 @@
 		<mapper resource="mybatis/mappers/CompanyPage.xml" />
 		<mapper resource="mybatis/mappers/Main.xml" />
 		<mapper resource="mybatis/mappers/Signup.xml" />
+		<mapper resource="mybatis/mappers/Disability.xml" />
 	</mappers>
 
 </configuration>

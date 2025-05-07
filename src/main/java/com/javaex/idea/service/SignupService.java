@@ -141,22 +141,15 @@ public class SignupService {
 		
 		if(role.equals("user")) {
 			
-			SignupVo userVo = new SignupVo();
-			
-			String name = signupDao.getUser(memberId);
-			
-			userVo.setName(name);
+			SignupVo userVo = signupDao.getUser(memberId);
 			userVo.setRole(role);
 			
 			return userVo;
 			
 		}else if(role.equals("company")) {
 			
-			SignupVo companyVo = new SignupVo();
+			SignupVo companyVo = signupDao.getCompany(memberId);
 			
-			String name = signupDao.getCompany(memberId);
-			
-			companyVo.setName(name);
 			companyVo.setRole(role);
 			
 			return companyVo;

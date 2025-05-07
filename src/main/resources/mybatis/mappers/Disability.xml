@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="disability">
+
+	<select id="getList" resultType="JobPostingVo">
+	
+		<![CDATA[
+			select   j.job_id as jobId
+					,j.company_id as companyId
+			        ,c.logo as companyLogo
+			        ,j.title as title
+			        ,c.name as companyName
+			        ,j.location as location
+			        ,j.experience_level as experienceLevel
+			        ,d.disability_name as disabilityTypeName
+			        ,j.deadline as deadline
+			from job_posting j
+			JOIN company c
+			ON j.company_id = c.company_id
+			LEFT JOIN disability_types d
+			ON j.disability_type = d.id
+		]]>
+	
+	</select>
+	
+	<!-- 북마크 리스트 -->
+	<select id="bookmarkList" parameterType="int" resultType="BookmarkVo">
+	
+		<![CDATA[
+			select job_id as jobId
+			from bookmarks
+			where user_id = #{userId}
+		]]>
+	
+	</select>
+	
+	<!-- 북마크 중복체크 -->
+	<select id="checkBookmark" parameterType="JobPostingVo" resultType="boolean">
+	    
+	    <![CDATA[
+		    SELECT COUNT(*) > 0
+		    FROM bookmarks
+		    WHERE job_id = #{jobId} AND user_id = #{userId}
+	    ]]>
+	    
+	</select>
+
+	<!-- 북마크 등록 -->
+	<insert id="insertBookmark" parameterType="JobPostingVo">
+		
+		<![CDATA[
+			insert into bookmarks (job_id, user_id)
+			values (#{jobId}, #{userId})
+		]]>
+	
+	</insert>
+
+	<!-- 북마크 삭제 -->
+	<delete id="deleteBookmark" parameterType="JobPostingVo">
+	
+		<![CDATA[
+			delete from bookmarks
+			where user_id = #{userId}
+			and job_id = #{jobId}
+		]]>
+	
+	</delete>
+
+
+
+
+
+
+
+</mapper>

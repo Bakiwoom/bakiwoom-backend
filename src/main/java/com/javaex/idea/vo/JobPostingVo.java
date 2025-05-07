@@ -4,6 +4,7 @@ public class JobPostingVo {
 
 	private int jobId;
 	private int companyId;
+	private int userId;
 	private String title;
 	private String department;
 	private String status;
@@ -30,17 +31,19 @@ public class JobPostingVo {
 	private String disabilityTypeName;
 	private double popularityScore;
 
-	JobPostingVo() {
+	public JobPostingVo() {
 
 	}
 
-	public JobPostingVo(int jobId, int companyId, String title, String department, String status, String location,
-			String jobType, String employmentType, String experienceLevel, String experienceYears, String deadline,
-			String description, String requirements, String preferred, String disabilityType, int viewCount,
-			int applyCount, int bookmarkCount, String createdAt, String updatedAt, String userName, String companyName,
-			String companyLogo, String disabilityTypeName, double popularityScore) {
+	public JobPostingVo(int jobId, int companyId, int userId, String title, String department, String status,
+			String location, String jobType, String employmentType, String experienceLevel, String experienceYears,
+			String deadline, String description, String requirements, String preferred, String disabilityType,
+			int viewCount, int applyCount, int bookmarkCount, String createdAt, String updatedAt, String userName,
+			String companyName, String companyLogo, String disabilityTypeName, double popularityScore) {
+		super();
 		this.jobId = jobId;
 		this.companyId = companyId;
+		this.userId = userId;
 		this.title = title;
 		this.department = department;
 		this.status = status;
@@ -66,6 +69,8 @@ public class JobPostingVo {
 		this.popularityScore = popularityScore;
 	}
 
+
+
 	public int getJobId() {
 		return jobId;
 	}
@@ -80,6 +85,14 @@ public class JobPostingVo {
 
 	public void setCompanyId(int companyId) {
 		this.companyId = companyId;
+	}
+	
+	public int getUserId() {
+		return userId;
+	}
+
+	public void setUserId(int userId) {
+		this.userId = userId;
 	}
 
 	public String getTitle() {
@@ -268,15 +281,17 @@ public class JobPostingVo {
 
 	@Override
 	public String toString() {
-		return "JobPostingVo [jobId=" + jobId + ", companyId=" + companyId + ", title=" + title + ", department="
-				+ department + ", status=" + status + ", location=" + location + ", jobType=" + jobType
-				+ ", employmentType=" + employmentType + ", experienceLevel=" + experienceLevel + ", experienceYears="
-				+ experienceYears + ", deadline=" + deadline + ", description=" + description + ", requirements="
-				+ requirements + ", preferred=" + preferred + ", disabilityType=" + disabilityType + ", viewCount="
-				+ viewCount + ", applyCount=" + applyCount + ", bookmarkCount=" + bookmarkCount + ", createdAt="
-				+ createdAt + ", updatedAt=" + updatedAt + ", userName=" + userName + ", companyName=" + companyName
-				+ ", companyLogo=" + companyLogo + ", disabilityTypeName=" + disabilityTypeName + ", popularityScore="
-				+ popularityScore + "]";
+		return "JobPostingVo [jobId=" + jobId + ", companyId=" + companyId + ", userId=" + userId + ", title=" + title
+				+ ", department=" + department + ", status=" + status + ", location=" + location + ", jobType="
+				+ jobType + ", employmentType=" + employmentType + ", experienceLevel=" + experienceLevel
+				+ ", experienceYears=" + experienceYears + ", deadline=" + deadline + ", description=" + description
+				+ ", requirements=" + requirements + ", preferred=" + preferred + ", disabilityType=" + disabilityType
+				+ ", viewCount=" + viewCount + ", applyCount=" + applyCount + ", bookmarkCount=" + bookmarkCount
+				+ ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", userName=" + userName + ", companyName="
+				+ companyName + ", companyLogo=" + companyLogo + ", disabilityTypeName=" + disabilityTypeName
+				+ ", popularityScore=" + popularityScore + "]";
 	}
+
+	
 
 }
