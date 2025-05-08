@@ -13,14 +13,15 @@ public class UserVo {
 	
 	//mypage
 	private int bookmarkcount;
+	private String id;
+	private String email;
 	
 	public UserVo() {
 		
 	};
 	
-
 	public UserVo(int userId, int memberId, String userName, String userProfileImageUrl, String birthDate,
-			String phoneNumber, int disabilityTypeId, int isVerified, int bookmarkcount) {
+			String phoneNumber, int disabilityTypeId, int isVerified, int bookmarkcount, String id, String email) {
 		super();
 		this.userId = userId;
 		this.memberId = memberId;
@@ -31,7 +32,10 @@ public class UserVo {
 		this.disabilityTypeId = disabilityTypeId;
 		this.isVerified = isVerified;
 		this.bookmarkcount = bookmarkcount;
+		this.id = id;
+		this.email = email;
 	}
+
 
 
 	public int getUserId() {
@@ -106,16 +110,31 @@ public class UserVo {
 	public void setBookmarkcount(int bookmarkcount) {
 		this.bookmarkcount = bookmarkcount;
 	}
+	
 
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
 	@Override
 	public String toString() {
 		return "UserVo [userId=" + userId + ", memberId=" + memberId + ", userName=" + userName
 				+ ", userProfileImageUrl=" + userProfileImageUrl + ", birthDate=" + birthDate + ", phoneNumber="
 				+ phoneNumber + ", disabilityTypeId=" + disabilityTypeId + ", isVerified=" + isVerified
-				+ ", bookmarkcount=" + bookmarkcount + "]";
+				+ ", bookmarkcount=" + bookmarkcount + ", id=" + id + ", email=" + email + "]";
 	}
-
 
 	
 }
