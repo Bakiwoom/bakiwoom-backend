@@ -54,6 +54,25 @@
 	
 	</select>
 	
+	<!-- 수정할 회원정보 가져오기 -->
+	<select id="getEdit" parameterType="int" resultType="UserVo">
+		
+		<![CDATA[
+			select   u.profile_image_url as userProfileImageUrl
+					,m.id as id
+			        ,u.name as userName
+			        ,u.birth_date as birthDate
+			        ,u.phone_number as phoneNumber
+			        ,u.email as email
+			        ,u.is_verified as isVerified
+			from user u
+			join member m
+			on u.member_id = m.member_id
+			where u.user_id = #{userId}
+		]]>
+	
+	</select>
+	
 	
 	
 </mapper>

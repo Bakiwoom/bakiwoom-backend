@@ -38,6 +38,12 @@ public class UserMyPageDao {
 		return applicationList;
 	};
 	
+	//수정할 회원정보 가져오기
+	public UserVo getEdit(int userId) {
+		UserVo getEditVo = sqlSession.selectOne("userMypage.getEdit",userId);
+		return getEditVo;
+	};
+	
 	
 	
 	

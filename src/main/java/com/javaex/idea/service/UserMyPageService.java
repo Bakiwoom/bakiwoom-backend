@@ -53,6 +53,14 @@ public class UserMyPageService {
 		return userApplicationMap;
 	};
 	
+	//- edit page -
+	
+	//수정할 정보 가져오기
+	public UserVo getEdit(int userId) {
+		UserVo getEditVo = userMypageDao.getEdit(userId);
+		return getEditVo;
+	};
+	
 	
 	
 	
