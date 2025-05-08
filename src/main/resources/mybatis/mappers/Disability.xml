@@ -20,7 +20,7 @@
 			JOIN company c
 			ON j.company_id = c.company_id
 			LEFT JOIN disability_types d
-			ON j.disability_type = d.id
+			ON j.disability_type_id = d.id
 		]]>
 	
 	</select>
