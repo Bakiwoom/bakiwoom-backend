@@ -108,8 +108,8 @@ public class SignupService {
 				
 				try {
 					if(businessLicenseImg != null && !businessLicenseImg.isEmpty()) {
-						String disabilityKey = "images/" + UUID.randomUUID() + "_" + businessLicenseImg.getOriginalFilename();
-			            String businessLicense = s3Service.uploadFile(disabilityKey, businessLicenseImg.getInputStream(),
+						String businessLicenseKey = "images/" + UUID.randomUUID() + "_" + businessLicenseImg.getOriginalFilename();
+			            String businessLicense = s3Service.uploadFile(businessLicenseKey, businessLicenseImg.getInputStream(),
 			            		businessLicenseImg.getSize(), businessLicenseImg.getContentType());
 			            
 			            companyVo.setBusinessLicense(businessLicense);

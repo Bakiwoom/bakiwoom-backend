@@ -1,15 +1,18 @@
 package com.javaex.idea.controller;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.javaex.idea.service.UserMyPageService;
-import com.javaex.idea.vo.JobPostingVo;
 import com.javaex.idea.vo.UserVo;
 import com.javaex.util.JsonResult;
 
@@ -41,11 +44,10 @@ public class UserMyPageController {
 	
 	
 	// -mypage edit-
-	//수정할 회원정보 가져오기
+	//기존 회원정보 가져오기
 	@GetMapping(value="/api/mypage/getEditUser/{userId}")
 	public JsonResult getEditUser(@PathVariable("userId") int userId) {
 		UserVo getEditVo = userMypageService.getEdit(userId);
-		System.out.println(getEditVo);
 		if(getEditVo != null) {
 			return JsonResult.success(getEditVo);
 		}else {
@@ -53,6 +55,30 @@ public class UserMyPageController {
 		}
 	};
 	
+	//수정할 회원정보 보내기
+	@PostMapping(value="/api/mypage/postEditUser")
+	public JsonResult postEditUser(@ModelAttribute UserVo editVo
+							,@RequestParam(value="userProfile", required=false) MultipartFile userProfile) {
+		
+		Map<String,Object> editDataMap = new HashMap<>();
+		editDataMap.put("editVo", editVo);
+		editDataMap.put("userProfile", userProfile);
+		
+		// 프로필이미지 파일 확인
+        if (userProfile != null && !userProfile.isEmpty()) {
+            System.out.println("프로필이미지 파일 이름: " + userProfile.getOriginalFilename());
+        } else {
+            System.out.println("프로필이미지 파일이 업로드되지 않았습니다.");
+        }
+        
+        int count = userMypageService.exeUpdateEdit(editDataMap);
+        
+        if(count > 0) {
+        	return JsonResult.success(count);
+        }else {
+        	return JsonResult.fail("회원정보수정 실패");
+        }
+	};
 	
 	
 }; //

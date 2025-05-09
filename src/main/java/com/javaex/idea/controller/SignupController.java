@@ -51,14 +51,14 @@ public class SignupController {
 	    signupDataMap.put("disabilityImageURL", disabilityImageURL);
 	    signupDataMap.put("businessLicenseImg", businessLicenseImg);
 	    
-	    // 장애인 등록증 파일처리
+	    // 장애인 등록증 파일 확인
         if (disabilityImageURL != null && !disabilityImageURL.isEmpty()) {
             System.out.println("파일 이름: " + disabilityImageURL.getOriginalFilename());
         } else {
             System.out.println("장애인 증명서 파일이 업로드되지 않았습니다.");
         }
         
-        // 사업자 등록증 파일 처리
+        // 사업자 등록증 파일 확인
         if (businessLicenseImg != null && !businessLicenseImg.isEmpty()) {
             System.out.println("사업자 등록증 파일 이름: " + businessLicenseImg.getOriginalFilename());
         } else {
