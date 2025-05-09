@@ -34,6 +34,30 @@ public class CompanyPageController {
 
 	@Autowired
 	private S3Service s3Service;
+	
+	// 지원 현황 조회
+	@GetMapping("/apply/count")
+	public JsonResult getApplyCount(HttpServletRequest request) {
+		try {
+			// 1. JWT 토큰에서 사용자 ID 가져오기
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+
+			// 2. 회원 ID로 회사 정보 조회
+			CompanyVo companyVo = companyPageService.getCompanyDetail(memberId);
+
+			if (companyVo == null) {
+				return JsonResult.fail("회사 정보를 찾을 수 없습니다.");
+			}
+
+			// 3. 회사 ID로 지원 현황 조회
+			JobPostingVo postings = companyPageService.getApplyCountByCompanyId(companyVo.getCompanyId());
+
+			return JsonResult.success(postings);
+		} catch (Exception e) {
+			return JsonResult.fail("지원 현황을 불러오는데 실패했습니다: " + e.getMessage());
+		}
+	}
+	
 
 	// 기업 정보 조회
 	@GetMapping("/company/detail")
