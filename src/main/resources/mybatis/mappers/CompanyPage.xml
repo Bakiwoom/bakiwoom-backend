@@ -176,5 +176,38 @@
 	    ORDER BY 
 	        a.applied_at DESC
     </select>
+    
+    <!-- 회사 ID로 공고글 조회 -->
+	<select id="getJobPostingsByCompanyId" parameterType="int" resultType="JobPostingVo">
+	   SELECT
+	        j.job_id AS jobId,
+	        j.company_id AS companyId,
+	        j.title,
+	        j.department,
+	        j.status,
+	        j.location,
+	        j.job_type AS jobType,
+	        j.employment_type AS employmentType,
+	        j.experience_level AS experienceLevel,
+	        j.experience_years AS experienceYears,
+	        j.deadline,
+	        j.description,
+	        j.requirements,
+	        j.preferred,
+	        dt.disability_name AS disabilityType,
+	        j.view_count AS viewCount,
+	        j.apply_count AS applyCount,
+	        j.bookmark_count AS bookmarkCount,
+	        j.created_at AS createdAt,
+	        j.updated_at AS updatedAt
+	    FROM 
+	        job_posting j
+		LEFT JOIN 
+	        disability_types dt ON j.disability_type_id = dt.id
+	    WHERE 
+	        j.company_id = #{companyId}
+	    ORDER BY 
+	        j.created_at DESC
+	</select>
 
 </mapper>

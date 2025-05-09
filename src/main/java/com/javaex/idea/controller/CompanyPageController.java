@@ -18,6 +18,7 @@ import com.javaex.idea.service.CompanyPageService;
 import com.javaex.idea.vo.ApplicationVo;
 import com.javaex.idea.vo.CompanyManagerVo;
 import com.javaex.idea.vo.CompanyVo;
+import com.javaex.idea.vo.JobPostingVo;
 import com.javaex.idea.vo.MemberVo;
 import com.javaex.util.JsonResult;
 import com.javaex.util.JwtUtil;
@@ -267,26 +268,49 @@ public class CompanyPageController {
 	}
 
 	// 회사의 지원 내역 조회
-    @GetMapping("/applications")
-    public JsonResult getApplications(HttpServletRequest request) {
-        try {
-            // 1. JWT 토큰에서 사용자 ID 가져오기
-            Integer memberId = JwtUtil.getNoFromHeader(request);
+	@GetMapping("/applications")
+	public JsonResult getApplications(HttpServletRequest request) {
+		try {
+			// 1. JWT 토큰에서 사용자 ID 가져오기
+			Integer memberId = JwtUtil.getNoFromHeader(request);
 
-            // 2. 회원 ID로 회사 정보 조회
-            CompanyVo companyVo = companyPageService.getCompanyDetail(memberId);
-            
-            if (companyVo == null) {
-                return JsonResult.fail("회사 정보를 찾을 수 없습니다.");
-            }
-            
-            // 3. 회사 ID로 지원 내역 조회
-            List<ApplicationVo> applications = companyPageService.getApplicationsByCompanyId(companyVo.getCompanyId());
-            
-            return JsonResult.success(applications);
-        } catch (Exception e) {
-            return JsonResult.fail("지원 내역을 불러오는데 실패했습니다: " + e.getMessage());
-        }
-    }
+			// 2. 회원 ID로 회사 정보 조회
+			CompanyVo companyVo = companyPageService.getCompanyDetail(memberId);
+
+			if (companyVo == null) {
+				return JsonResult.fail("회사 정보를 찾을 수 없습니다.");
+			}
+
+			// 3. 회사 ID로 지원 내역 조회
+			List<ApplicationVo> applications = companyPageService.getApplicationsByCompanyId(companyVo.getCompanyId());
+
+			return JsonResult.success(applications);
+		} catch (Exception e) {
+			return JsonResult.fail("지원 내역을 불러오는데 실패했습니다: " + e.getMessage());
+		}
+	}
+
+	// 공고글 조회(내 공고 관리)
+	@GetMapping("/jobs/posting")
+	public JsonResult getJobPosting(HttpServletRequest request) {
+		try {
+			// 1. JWT 토큰에서 사용자 ID 가져오기
+			Integer memberId = JwtUtil.getNoFromHeader(request);
+
+			// 2. 회원 ID로 회사 정보 조회
+			CompanyVo companyVo = companyPageService.getCompanyDetail(memberId);
+
+			if (companyVo == null) {
+				return JsonResult.fail("회사 정보를 찾을 수 없습니다.");
+			}
+
+			// 3. 회사 ID로 지원 내역 조회
+			List<JobPostingVo> postings = companyPageService.getJobPostingsByCompanyId(companyVo.getCompanyId());
+
+			return JsonResult.success(postings);
+		} catch (Exception e) {
+			return JsonResult.fail("지원 내역을 불러오는데 실패했습니다: " + e.getMessage());
+		}
+	}
 
 }

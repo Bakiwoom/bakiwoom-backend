@@ -9,6 +9,7 @@ import com.javaex.idea.dao.CompanyPageDao;
 import com.javaex.idea.vo.ApplicationVo;
 import com.javaex.idea.vo.CompanyManagerVo;
 import com.javaex.idea.vo.CompanyVo;
+import com.javaex.idea.vo.JobPostingVo;
 import com.javaex.idea.vo.MemberVo;
 
 @Service
@@ -167,6 +168,11 @@ public class CompanyPageService {
 	// 회사 ID로 지원 내역 조회
     public List<ApplicationVo> getApplicationsByCompanyId(int companyId) {
         return companyPageDao.getApplicationsByCompanyId(companyId);
+    }
+    
+    // 회사 ID로 공고글 조회
+    public List<JobPostingVo> getJobPostingsByCompanyId(int companyId) {
+        return companyPageDao.getJobPostingsByCompanyId(companyId);
     }
 
 }
