@@ -73,6 +73,31 @@
 	
 	</select>
 	
+	<!-- 회원정보수정 memberT -->
+	<update id="editMemberT" parameterType="UserVo">
+	
+		<![CDATA[
+			update member
+			set id = #{id}
+			where member_id = #{memberId}
+		]]>
+	
+	</update>
+	
+	<!-- 회원정보수정 userT -->
+	<update id="editUserT" parameterType="UserVo">
+	
+		<![CDATA[
+			update user
+			set  profile_image_url = #{userProfileImageUrl}
+				,birth_date = #{birthDate}
+				,phone_number = #{phoneNumber}
+			    ,email = #{email}
+			where member_id = #{memberId}
+		]]>
+	
+	</update>
+	
 	
 	
 </mapper>

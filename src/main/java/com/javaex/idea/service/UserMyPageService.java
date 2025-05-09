@@ -1,11 +1,14 @@
 package com.javaex.idea.service;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.javaex.idea.dao.UserMyPageDao;
 import com.javaex.idea.vo.JobPostingVo;
@@ -14,7 +17,10 @@ import com.javaex.idea.vo.UserVo;
 @Service
 public class UserMyPageService {
 	
-	@Autowired UserMyPageDao userMypageDao;
+	@Autowired
+	private UserMyPageDao userMypageDao;
+	@Autowired
+	private S3Service s3Service;
 
 	//기본정보 가져오기(북마크갯수, 프로필이미지, 장애인증)
 	public UserVo exeGetUser(int userId) {
@@ -61,6 +67,40 @@ public class UserMyPageService {
 		return getEditVo;
 	};
 	
+	//수정할 정보 보내기
+	public int exeUpdateEdit(Map<String,Object> editDataMap) {
+		
+		UserVo userVo = (UserVo) editDataMap.get("editVo");
+		
+		// 1.s3 업로드 처리
+		MultipartFile userProfile = (MultipartFile) editDataMap.get("userProfile");
+		
+		try {
+			if(userProfile != null && !userProfile.isEmpty()) {
+				String userProfileKey = "images/" + UUID.randomUUID() + "_" + userProfile.getOriginalFilename();
+	            String userProfileImageUrl = s3Service.uploadFile(userProfileKey, userProfile.getInputStream(),
+	            		userProfile.getSize(), userProfile.getContentType());
+	            
+	            userVo.setUserProfileImageUrl(userProfileImageUrl);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.", e);
+		}
+		
+		// 2.회원정보 수정
+		// 2-1.memberT update
+		int result = userMypageDao.editMemberData(userVo);
+		
+		// 2-2.userT update
+		if(result > 0) {
+			int count = userMypageDao.editUserData(userVo);
+			return count;
+		}else {
+			int count = 0;
+			return count;
+		}
+		
+	};
 	
 	
 	
