@@ -20,6 +20,11 @@ public class CompanyPageService {
 
 	@Autowired
 	private S3Service s3Service;
+	
+	// 지원 현황 조회
+	public JobPostingVo getApplyCountByCompanyId(int companyId) {
+        return companyPageDao.getApplyCountByCompanyId(companyId);
+    }
 
 	// 기업 정보 조회
 	public CompanyVo getCompanyDetail(int memberId) {

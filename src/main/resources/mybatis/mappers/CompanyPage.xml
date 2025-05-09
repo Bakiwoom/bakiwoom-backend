@@ -4,6 +4,25 @@
 
 <mapper namespace="company">
 
+	<!-- 지원 현황 조회 -->
+    <select id="getApplyCountByCompanyId" parameterType="int" resultType="JobPostingVo">
+        SELECT
+		    c.company_id,
+		    c.name AS company_name,
+		    COUNT(a.applications_id) AS applyCount
+		FROM
+		    company c
+		JOIN
+		    job_posting j ON c.company_id = j.company_id
+		JOIN
+		    applications a ON j.job_id = a.job_id
+		WHERE
+		    c.company_id = #{companyId}
+		GROUP BY
+		    c.company_id, c.name
+    </select>
+
+
 	<!-- 회원 ID로 기업 정보 조회 -->
     <select id="getCompanyByMemberId" parameterType="int" resultType="CompanyVo">
         SELECT 
