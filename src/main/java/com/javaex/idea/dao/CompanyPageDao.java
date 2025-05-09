@@ -20,6 +20,11 @@ public class CompanyPageDao {
 	@Autowired
 	private SqlSession sqlSession;
 
+	// 회사 ID로 지원 현황 조회
+	public JobPostingVo getApplyCountByCompanyId(int companyId) {
+		return sqlSession.selectOne("company.getApplyCountByCompanyId", companyId);
+	}
+
 	// 회원 ID로 기업 정보 조회
 	public CompanyVo getCompanyByMemberId(int memberId) {
 		return sqlSession.selectOne("company.getCompanyByMemberId", memberId);
