@@ -24,4 +24,55 @@
 		]]>
 	
 	</select>
+	
+	<!-- 지원현황 갯수 가져오 -->
+	<select id="getApplicationCount" parameterType="int" resultType="int">
+		
+		<![CDATA[
+			select count(*)
+			from applications
+			where user_id = #{userId}
+		]]>
+	
+	</select>
+	
+	<!-- 지원공고글 가져오기 -->
+	<select id="getApplications" parameterType="int" resultType="JobPostingVo">
+	
+		<![CDATA[
+			select	 j.title as title
+					,c.name as companyName
+			        ,a.applied_at as createAt
+			        ,job_type as jobType
+			from job_posting j
+			right JOIN applications a
+			on j.job_id = a.job_id
+			join company c
+			on j.company_id = c.company_id
+			where a.user_id = #{userId}
+		]]>
+	
+	</select>
+	
+	<!-- 수정할 회원정보 가져오기 -->
+	<select id="getEdit" parameterType="int" resultType="UserVo">
+		
+		<![CDATA[
+			select   u.profile_image_url as userProfileImageUrl
+					,m.id as id
+			        ,u.name as userName
+			        ,u.birth_date as birthDate
+			        ,u.phone_number as phoneNumber
+			        ,u.email as email
+			        ,u.is_verified as isVerified
+			from user u
+			join member m
+			on u.member_id = m.member_id
+			where u.user_id = #{userId}
+		]]>
+	
+	</select>
+	
+	
+	
 </mapper>
