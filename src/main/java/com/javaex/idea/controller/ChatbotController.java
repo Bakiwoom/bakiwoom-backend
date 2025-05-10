@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -59,7 +62,10 @@ public class ChatbotController {
         logger.info("Processing conversation with expert type: {}", expertType);
         try {
             String url = aiServerUrl + "/chat/conversation";
-            ChatbotResponse response = restTemplate.postForObject(url, request, ChatbotResponse.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<ConversationRequest> entity = new HttpEntity<>(request, headers);
+            ChatbotResponse response = restTemplate.postForObject(url, entity, ChatbotResponse.class);
             logger.info("Received response from AI server for conversation");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
