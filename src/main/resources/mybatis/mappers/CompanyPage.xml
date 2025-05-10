@@ -228,5 +228,4 @@
 	    ORDER BY 
 	        j.created_at DESC
 	</select>
-
 </mapper>

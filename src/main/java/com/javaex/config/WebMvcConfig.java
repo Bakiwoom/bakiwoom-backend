@@ -15,7 +15,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	public void addCorsMappings(@NonNull CorsRegistry registry) {
 		registry.addMapping("/**")
 			.allowedOriginPatterns("http://localhost:3000", "http://localhost:8000") // 프론트엔드와 AI 서버 허용
-			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
 			.allowedHeaders("*")
 			.exposedHeaders("Authorization")
 			.allowCredentials(true);

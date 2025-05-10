@@ -12,4 +12,8 @@ public class ConversationRequest {
     public String getExpert_type() {
         return expert_type;
     }
-} 
+
+    public List<Map<String, String>> getMessages() {
+        return messages;
+    }
+}
