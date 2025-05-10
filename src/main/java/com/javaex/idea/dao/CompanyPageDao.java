@@ -85,4 +85,5 @@ public class CompanyPageDao {
 	public List<JobPostingVo> getJobPostingsByCompanyId(int companyId) {
 		return sqlSession.selectList("company.getJobPostingsByCompanyId", companyId);
 	}
+
 }
