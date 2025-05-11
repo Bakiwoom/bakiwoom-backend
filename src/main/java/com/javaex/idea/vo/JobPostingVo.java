@@ -23,7 +23,7 @@ public class JobPostingVo {
 	private int bookmarkCount;
 	private String createdAt;
 	private String updatedAt;
-
+	private String appliedAt;
 	// 조인 결과용 추가 필드
 	private String userName;
 	private String companyName;
@@ -31,6 +31,9 @@ public class JobPostingVo {
 	private String disabilityTypeName;
 	private double popularityScore;
 	private String role;
+
+	//사용자가 이미 지원했는지 여부
+	private boolean hasApplied;
 
 	public JobPostingVo() {
 
@@ -68,6 +71,13 @@ public class JobPostingVo {
 		this.disabilityTypeName = disabilityTypeName;
 		this.popularityScore = popularityScore;
 		this.role = role;
+	}
+
+	public boolean isHasApplied() {
+		return hasApplied;
+	}
+	public void setHasApplied(boolean hasApplied) {
+		this.hasApplied = hasApplied;
 	}
 
 	public int getJobId() {
@@ -299,4 +309,11 @@ public class JobPostingVo {
 				+ ", popularityScore=" + popularityScore + ", role=" + role + "]";
 	}
 
+    public String getAppliedAt() {
+        return appliedAt;
+    }
+
+    public void setAppliedAt(String appliedAt) {
+        this.appliedAt = appliedAt;
+    }
 }

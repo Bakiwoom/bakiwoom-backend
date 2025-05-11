@@ -3,6 +3,9 @@ package com.javaex.idea.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.javaex.idea.service.JobPostingService;
+import com.javaex.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -20,7 +23,8 @@ import com.javaex.util.JsonResult;
 public class UserMyPageController {
 	
 	@Autowired UserMyPageService userMypageService;
-	
+	@Autowired
+	private JobPostingService jobPostingService;
 	// -mypage main-
 	//기본정보 가져오기(북마크갯수, 프로필이미지, 장애인증)
 	@GetMapping(value="/api/mypage/bookmarkcount/{userId}")
@@ -35,14 +39,28 @@ public class UserMyPageController {
 	};
 	
 	//user 지원현황 가져오기
-	@GetMapping(value="/api/mypage/getApplications/{userId}")
-	public JsonResult getApplications(@PathVariable ("userId") int userId) {
-		Map<String, Object> userApplicationMap = userMypageService.getApplications(userId);
-		
-		return JsonResult.success(userApplicationMap);
-	};
-	
-	
+	@GetMapping("/api/mypage/getApplications")
+	public JsonResult getApplications(HttpServletRequest request) {
+		Integer memberId = JwtUtil.getNoFromHeader(request);
+		if (memberId == null) {
+			return JsonResult.fail("로그인이 필요합니다.");
+		}
+
+		try {
+			int userId = jobPostingService.resolveUserId(memberId);
+			Map<String, Object> result = userMypageService.getApplications(userId);
+			return JsonResult.success(result);
+		} catch (Exception e) {
+			return JsonResult.fail("지원 이력 조회 중 오류 발생: " + e.getMessage());
+		}
+	}
+//
+//	@GetMapping("/api/mypage/getApplications/{userId}")
+//	public JsonResult getApplicationsByUserId(@PathVariable int userId) {
+//		Map<String, Object> map = userMypageService.getApplications(userId);
+//		return JsonResult.success(map);
+//	}
+//
 	// -mypage edit-
 	//기존 회원정보 가져오기
 	@GetMapping(value="/api/mypage/getEditUser/{userId}")

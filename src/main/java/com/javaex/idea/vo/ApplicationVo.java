@@ -11,6 +11,7 @@ public class ApplicationVo {
 	private String disabilityType; // 장애 유형/등급
 	private String appliedDate; // 지원 일자
 	private String createdAt;
+	private String appliedAt;   // TIMESTAMP
 
 	public ApplicationVo() {
 
@@ -100,6 +101,10 @@ public class ApplicationVo {
 	public void setCreatedAt(String createdAt) {
 		this.createdAt = createdAt;
 	}
+
+	public String getAppliedAt() { return appliedAt; }
+
+	public void setAppliedAt(String appliedAt) { this.appliedAt = appliedAt; }
 
 	@Override
 	public String toString() {
