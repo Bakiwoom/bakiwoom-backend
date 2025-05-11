@@ -38,20 +38,33 @@
 	
 	<!-- 지원공고글 가져오기 -->
 	<select id="getApplications" parameterType="int" resultType="JobPostingVo">
-	
+
 		<![CDATA[
-			select	 j.title as title
-					,c.name as companyName
-			        ,a.applied_at as createAt
-			        ,job_type as jobType
-			from job_posting j
-			right JOIN applications a
-			on j.job_id = a.job_id
-			join company c
-			on j.company_id = c.company_id
-			where a.user_id = #{userId}
+		SELECT
+			a.applications_id AS applicationId,
+			a.user_id         AS userId,
+			u.name            AS userName,
+			j.job_id          AS jobId,
+			j.title           ,
+			j.job_type        AS jobType,
+			j.status          AS status,
+			c.name            AS companyName,
+			DATE_FORMAT(a.applied_at, '%Y-%m-%d %H:%i:%s') AS appliedAt,
+
+			-- ✅ AI 분석 혜택 추가
+			r.my_benefits     AS myBenefits,
+			r.company_benefits AS companyBenefits
+
+		FROM applications a
+				 JOIN `user` u ON a.user_id = u.user_id
+				 JOIN job_posting j ON a.job_id = j.job_id
+				 JOIN company c ON j.company_id = c.company_id
+				 LEFT JOIN analysis_results r
+						   ON r.user_id = a.user_id AND r.job_id = a.job_id
+		WHERE a.user_id = #{userId}
+		ORDER BY a.applied_at DESC
 		]]>
-	
+
 	</select>
 	
 	<!-- 수정할 회원정보 가져오기 -->
@@ -72,6 +85,31 @@
 		]]>
 	
 	</select>
+	
+	<!-- 회원정보수정 memberT -->
+	<update id="editMemberT" parameterType="UserVo">
+	
+		<![CDATA[
+			update member
+			set id = #{id}
+			where member_id = #{memberId}
+		]]>
+	
+	</update>
+	
+	<!-- 회원정보수정 userT -->
+	<update id="editUserT" parameterType="UserVo">
+	
+		<![CDATA[
+			update user
+			set  profile_image_url = #{userProfileImageUrl}
+				,birth_date = #{birthDate}
+				,phone_number = #{phoneNumber}
+			    ,email = #{email}
+			where member_id = #{memberId}
+		]]>
+	
+	</update>
 	
 	
 	

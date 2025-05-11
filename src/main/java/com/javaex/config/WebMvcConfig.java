@@ -13,25 +13,22 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addCorsMappings(@NonNull CorsRegistry registry) {
-	    registry.addMapping("/**")
-	        .allowedOriginPatterns("http://localhost:3000") // 모든 출처 허용 (특정 패턴 사용 가능) "*" 모든출처 지움
-	        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-	        .allowedHeaders("*")
-	        .exposedHeaders("Authorization")
-	        .allowCredentials(true);
+		registry.addMapping("/**")
+			.allowedOriginPatterns("http://localhost:3000", "http://localhost:8000", "http://3.38.213.53:8082") // 프론트엔드와 AI 서버 허용
+			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
+			.allowedHeaders("*")
+			.exposedHeaders("Authorization")
+			.allowCredentials(true);
 	}
 
 	@Override
 	public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
-
 		String saveDir;
 		String osName = System.getProperty("os.name").toLowerCase();
 
 		if (osName.contains("linux")) {
 			System.out.println("리눅스");
-			// saveDir = "/home/ec2-user/upload/";
 			saveDir = "/app/upload/";
-
 		} else {
 			System.out.println("윈도우");
 			saveDir = "C:\\javaStudy\\upload\\";

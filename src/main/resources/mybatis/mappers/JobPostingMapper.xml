@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="job">
+
+    <!-- 공고 등록 (user_id 제거됨) -->
+    <insert id="insertJobPosting"
+            parameterType="JobPostingVo"
+            useGeneratedKeys="true"
+            keyProperty="jobId"
+            keyColumn="job_id">
+        INSERT INTO job_posting (
+            company_id, title, department, status, location,
+            job_type, employment_type, experience_level, experience_years,
+            deadline, description, requirements, preferred, disability_type_id,
+            view_count, apply_count, bookmark_count
+        )
+        VALUES (
+                   #{companyId}, #{title}, #{department}, #{status}, #{location},
+                   #{jobType}, #{employmentType}, #{experienceLevel}, #{experienceYears},
+                   #{deadline}, #{description}, #{requirements}, #{preferred}, #{disabilityTypeName},
+                   0, 0, 0
+               )
+    </insert>
+
+    <!-- 공고 단건 조회 -->
+    <select id="getJobPostingById" parameterType="int" resultType="JobPostingVo">
+        SELECT
+            job_id            AS jobId,
+            company_id        AS companyId,
+            title,
+            department,
+            status,
+            location,
+            job_type          AS jobType,
+            employment_type   AS employmentType,
+            experience_level  AS experienceLevel,
+            experience_years  AS experienceYears,
+            deadline,
+            description,
+            requirements,
+            preferred,
+            view_count        AS viewCount,
+            apply_count       AS applyCount,
+            bookmark_count    AS bookmarkCount,
+            created_at        AS createdAt,
+            updated_at        AS updatedAt,
+            disability_type_id AS disabilityTypeName
+        FROM job_posting
+        WHERE job_id = #{jobId}
+    </select>
+
+    <select id="getCompanyIdByMemberId" parameterType="int" resultType="int">
+        SELECT company_id FROM company WHERE member_id = #{memberId}
+    </select>
+
+    <!-- (기존) 공고 삭제 매핑 -->
+    <delete id="deleteJobPosting" parameterType="int">
+        DELETE FROM job_posting
+        WHERE job_id = #{jobId}
+    </delete>
+
+    <!-- ↓ 새로 추가: 공고 마감 처리 -->
+    <update id="closeJobPosting" parameterType="int">
+        UPDATE job_posting
+        SET status     = 'closed',
+            updated_at = NOW()
+        WHERE job_id = #{jobId}
+    </update>
+
+    <!-- 지원 정보 저장 -->
+    <insert id="insertApplication" parameterType="ApplicationVo">
+        INSERT INTO applications
+            (user_id, job_id, applied_at)
+        VALUES
+            (#{userId}, #{jobId}, NOW())
+    </insert>
+
+    <!-- 중복 지원 체크 -->
+    <select id="countByUserIdAndJobId"
+            parameterType="map"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM applications
+        WHERE user_id = #{userId}
+          AND job_id  = #{jobId}
+    </select>
+
+    <!-- 지원자 목록 조회 -->
+    <select id="getApplicationsByJobId"
+            parameterType="int"
+            resultType="com.javaex.idea.vo.ApplicationVo">
+        SELECT
+            a.applications_id AS applicationId,
+            a.user_id         AS userId,
+            u.name            AS userName,
+            u.phone           AS userPhone,
+            a.job_id          AS jobId,
+            j.title           AS jobTitle,
+            dt.name           AS disabilityType,
+            DATE_FORMAT(a.applied_date, '%Y-%m-%d %H:%i:%s') AS appliedDate,
+            DATE_FORMAT(a.created_at, '%Y-%m-%d %H:%i:%s')   AS createdAt
+        FROM applications a
+                 JOIN users u ON a.user_id = u.user_id
+                 JOIN job_posting j ON a.job_id = j.job_id
+                 LEFT JOIN disability_type dt ON u.disability_type_id = dt.id
+        WHERE a.job_id = #{jobId}
+        ORDER BY a.applied_date DESC
+    </select>
+    <!-- memberId → userId 조회 -->
+    <select id="getUserIdByMemberId" parameterType="int" resultType="int">
+        SELECT user_id
+        FROM `user`
+        WHERE member_id = #{memberId}
+    </select>
+
+    <delete id="cancelApplication" parameterType="map">
+        DELETE FROM applications
+        WHERE user_id = #{userId}
+          AND job_id = #{jobId}
+    </delete>
+
+</mapper>

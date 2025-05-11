@@ -43,7 +43,18 @@ public class UserMyPageDao {
 		UserVo getEditVo = sqlSession.selectOne("userMypage.getEdit",userId);
 		return getEditVo;
 	};
+
+	//회원정보수정(memberT)
+	public int editMemberData(UserVo userVo) {
+		int result = sqlSession.update("userMypage.editMemberT",userVo);
+		return result;
+	};
 	
+	//회원정보수정(userT)
+	public int editUserData(UserVo userVo) {
+		int result = sqlSession.update("userMypage.editUserT",userVo);
+		return result;
+	};
 	
 	
 	

@@ -11,6 +11,11 @@ public class ApplicationVo {
 	private String disabilityType; // 장애 유형/등급
 	private String appliedDate; // 지원 일자
 	private String createdAt;
+	private String appliedAt;   // TIMESTAMP
+
+	// ✅ 추가할 항목
+	private String myBenefits;
+	private String companyBenefits;
 
 	public ApplicationVo() {
 
@@ -101,6 +106,10 @@ public class ApplicationVo {
 		this.createdAt = createdAt;
 	}
 
+	public String getAppliedAt() { return appliedAt; }
+
+	public void setAppliedAt(String appliedAt) { this.appliedAt = appliedAt; }
+
 	@Override
 	public String toString() {
 		return "ApplicationVo [applicationId=" + applicationId + ", userId=" + userId + ", userName=" + userName
@@ -108,4 +117,19 @@ public class ApplicationVo {
 				+ disabilityType + ", appliedDate=" + appliedDate + ", createdAt=" + createdAt + "]";
 	}
 
+    public String getMyBenefits() {
+        return myBenefits;
+    }
+
+    public void setMyBenefits(String myBenefits) {
+        this.myBenefits = myBenefits;
+    }
+
+    public String getCompanyBenefits() {
+        return companyBenefits;
+    }
+
+    public void setCompanyBenefits(String companyBenefits) {
+        this.companyBenefits = companyBenefits;
+    }
 }

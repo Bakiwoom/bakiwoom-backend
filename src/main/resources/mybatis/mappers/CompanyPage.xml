@@ -173,23 +173,26 @@
 	
     <!-- 회사 ID로 지원 내역 조회 -->
     <select id="getApplicationsByCompanyId" parameterType="int" resultType="ApplicationVo">
-        SELECT 
-	        a.applications_id AS applicationId,
-	        a.user_id AS userId,
-	        u.name AS userName,
-	        u.phone_number AS userPhone,
-	        a.job_id AS jobId,
-	        j.title AS jobTitle,
-	        dt.disability_name AS disabilityType,
-	        DATE_FORMAT(a.applied_at, '%Y-%m-%d') AS appliedDate
-	    FROM 
-	        applications a
-	    INNER JOIN 
-	        user u ON a.user_id = u.user_id
-	    INNER JOIN 
-	        job_posting j ON a.job_id = j.job_id
-	    LEFT JOIN 
-	        disability_types dt ON u.disability_type_id = dt.id
+		SELECT
+			a.applications_id AS applicationId,
+			a.user_id         AS userId,
+			u.name            AS userName,
+			u.phone_number    AS userPhone,
+			a.job_id          AS jobId,
+			j.title           AS jobTitle,
+			dt.disability_name AS disabilityType,
+			DATE_FORMAT(a.applied_at, '%Y-%m-%d') AS appliedDate,
+
+			-- ✅ AI 분석 혜택 추가
+			ar.my_benefits     AS myBenefits,
+			ar.company_benefits AS companyBenefits
+
+		FROM applications a
+				 INNER JOIN user u ON a.user_id = u.user_id
+				 INNER JOIN job_posting j ON a.job_id = j.job_id
+				 LEFT JOIN disability_types dt ON u.disability_type_id = dt.id
+				 LEFT JOIN analysis_results ar ON ar.user_id = a.user_id AND ar.job_id = a.job_id
+
 	    WHERE 
 	        j.company_id = #{companyId}
 	    ORDER BY 
@@ -228,5 +231,4 @@
 	    ORDER BY 
 	        j.created_at DESC
 	</select>
-
 </mapper>
