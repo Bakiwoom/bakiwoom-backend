@@ -69,4 +69,56 @@
         WHERE job_id = #{jobId}
     </update>
 
+    <!-- 지원 정보 저장 -->
+    <insert id="insertApplication" parameterType="ApplicationVo">
+        INSERT INTO applications
+            (user_id, job_id, applied_at)
+        VALUES
+            (#{userId}, #{jobId}, NOW())
+    </insert>
+
+    <!-- 중복 지원 체크 -->
+    <select id="countByUserIdAndJobId"
+            parameterType="map"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM applications
+        WHERE user_id = #{userId}
+          AND job_id  = #{jobId}
+    </select>
+
+    <!-- 지원자 목록 조회 -->
+    <select id="getApplicationsByJobId"
+            parameterType="int"
+            resultType="com.javaex.idea.vo.ApplicationVo">
+        SELECT
+            a.applications_id AS applicationId,
+            a.user_id         AS userId,
+            u.name            AS userName,
+            u.phone           AS userPhone,
+            a.job_id          AS jobId,
+            j.title           AS jobTitle,
+            dt.name           AS disabilityType,
+            DATE_FORMAT(a.applied_date, '%Y-%m-%d %H:%i:%s') AS appliedDate,
+            DATE_FORMAT(a.created_at, '%Y-%m-%d %H:%i:%s')   AS createdAt
+        FROM applications a
+                 JOIN users u ON a.user_id = u.user_id
+                 JOIN job_posting j ON a.job_id = j.job_id
+                 LEFT JOIN disability_type dt ON u.disability_type_id = dt.id
+        WHERE a.job_id = #{jobId}
+        ORDER BY a.applied_date DESC
+    </select>
+    <!-- memberId → userId 조회 -->
+    <select id="getUserIdByMemberId" parameterType="int" resultType="int">
+        SELECT user_id
+        FROM `user`
+        WHERE member_id = #{memberId}
+    </select>
+
+    <delete id="cancelApplication" parameterType="map">
+        DELETE FROM applications
+        WHERE user_id = #{userId}
+          AND job_id = #{jobId}
+    </delete>
+
 </mapper>

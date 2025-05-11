@@ -38,20 +38,26 @@
 	
 	<!-- 지원공고글 가져오기 -->
 	<select id="getApplications" parameterType="int" resultType="JobPostingVo">
-	
+
 		<![CDATA[
-			select	 j.title as title
-					,c.name as companyName
-			        ,a.applied_at as createAt
-			        ,job_type as jobType
-			from job_posting j
-			right JOIN applications a
-			on j.job_id = a.job_id
-			join company c
-			on j.company_id = c.company_id
-			where a.user_id = #{userId}
+		SELECT
+			a.applications_id AS applicationId,
+			a.user_id         AS userId,
+			u.name            AS userName,
+			j.job_id          AS jobId,
+			j.title           ,
+			j.job_type        AS jobType,
+			j.status          AS status,
+			c.name            AS companyName,
+			DATE_FORMAT(a.applied_at, '%Y-%m-%d %H:%i:%s') AS appliedAt
+		FROM applications a
+				 JOIN `user` u ON a.user_id = u.user_id
+				 JOIN job_posting j ON a.job_id = j.job_id
+				 JOIN company c ON j.company_id = c.company_id
+		WHERE a.user_id = #{userId}
+		ORDER BY a.applied_at DESC
 		]]>
-	
+
 	</select>
 	
 	<!-- 수정할 회원정보 가져오기 -->
