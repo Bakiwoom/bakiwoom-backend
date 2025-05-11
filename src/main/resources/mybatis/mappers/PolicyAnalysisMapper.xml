@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ai">
+
+    <!-- 분석 결과 조회 -->
+    <select id="getAnalysisResult" resultType="AnalysisResultVo">
+        SELECT
+            user_id,
+            job_id,
+            my_benefits,
+            company_benefits
+        FROM
+            analysis_results
+        WHERE
+            user_id = #{userId}
+          AND job_id = #{jobId}
+    </select>
+
+</mapper>

@@ -13,6 +13,10 @@ public class ApplicationVo {
 	private String createdAt;
 	private String appliedAt;   // TIMESTAMP
 
+	// ✅ 추가할 항목
+	private String myBenefits;
+	private String companyBenefits;
+
 	public ApplicationVo() {
 
 	}
@@ -113,4 +117,19 @@ public class ApplicationVo {
 				+ disabilityType + ", appliedDate=" + appliedDate + ", createdAt=" + createdAt + "]";
 	}
 
+    public String getMyBenefits() {
+        return myBenefits;
+    }
+
+    public void setMyBenefits(String myBenefits) {
+        this.myBenefits = myBenefits;
+    }
+
+    public String getCompanyBenefits() {
+        return companyBenefits;
+    }
+
+    public void setCompanyBenefits(String companyBenefits) {
+        this.companyBenefits = companyBenefits;
+    }
 }

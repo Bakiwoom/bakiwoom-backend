@@ -49,11 +49,18 @@
 			j.job_type        AS jobType,
 			j.status          AS status,
 			c.name            AS companyName,
-			DATE_FORMAT(a.applied_at, '%Y-%m-%d %H:%i:%s') AS appliedAt
+			DATE_FORMAT(a.applied_at, '%Y-%m-%d %H:%i:%s') AS appliedAt,
+
+			-- ✅ AI 분석 혜택 추가
+			r.my_benefits     AS myBenefits,
+			r.company_benefits AS companyBenefits
+
 		FROM applications a
 				 JOIN `user` u ON a.user_id = u.user_id
 				 JOIN job_posting j ON a.job_id = j.job_id
 				 JOIN company c ON j.company_id = c.company_id
+				 LEFT JOIN analysis_results r
+						   ON r.user_id = a.user_id AND r.job_id = a.job_id
 		WHERE a.user_id = #{userId}
 		ORDER BY a.applied_at DESC
 		]]>

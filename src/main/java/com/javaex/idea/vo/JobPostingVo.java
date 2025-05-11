@@ -35,6 +35,10 @@ public class JobPostingVo {
 	//사용자가 이미 지원했는지 여부
 	private boolean hasApplied;
 
+	// ✅ 추가할 항목
+	private String myBenefits;
+	private String companyBenefits;
+
 	public JobPostingVo() {
 
 	}
@@ -315,5 +319,21 @@ public class JobPostingVo {
 
     public void setAppliedAt(String appliedAt) {
         this.appliedAt = appliedAt;
+    }
+
+    public String getMyBenefits() {
+        return myBenefits;
+    }
+
+    public void setMyBenefits(String myBenefits) {
+        this.myBenefits = myBenefits;
+    }
+
+    public String getCompanyBenefits() {
+        return companyBenefits;
+    }
+
+    public void setCompanyBenefits(String companyBenefits) {
+        this.companyBenefits = companyBenefits;
     }
 }
