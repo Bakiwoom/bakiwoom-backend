@@ -15,6 +15,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chatbot")
@@ -30,10 +33,10 @@ public class ChatbotController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping(value = "/start", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> startChat() {
-        logger.info("Starting new chat session");
+    public ResponseEntity<?> startChat(@RequestParam(name = "user_type", required = true) String userType) {
+        logger.info("Starting new chat session with user type: {}", userType);
         try {
-            String url = aiServerUrl + "/chat/start";
+            String url = aiServerUrl + "/chat/start?user_type=" + userType;
             ChatbotResponse response = restTemplate.postForObject(url, null, ChatbotResponse.class);
 
             if (response == null) {
@@ -73,12 +76,25 @@ public class ChatbotController {
     public ResponseEntity<ChatbotResponse> processConversation(
             @RequestBody ConversationRequest request) {
         String expertType = request.getExpert_type();
-        logger.info("Processing conversation with expert type: {}", expertType);
+        String userType = request.getUser_type();
+        logger.info("Processing conversation with expert type: {} and user type: {}", expertType, userType);
         try {
             String url = aiServerUrl + "/chat/conversation";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ConversationRequest> entity = new HttpEntity<>(request, headers);
+            
+            // Python 백엔드의 ChatRequest 모델에 맞게 요청 데이터 변환
+            Map<String, Object> pythonRequest = new HashMap<>();
+            pythonRequest.put("messages", request.getMessages().stream()
+                .map(msg -> Map.of(
+                    "role", msg.get("role"),
+                    "content", msg.get("content")
+                ))
+                .collect(Collectors.toList()));
+            pythonRequest.put("user_type", userType);
+            pythonRequest.put("session_state", new HashMap<>()); // 빈 세션 상태
+            
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(pythonRequest, headers);
             ChatbotResponse response = restTemplate.postForObject(url, entity, ChatbotResponse.class);
             logger.info("Received response from AI server for conversation");
             return ResponseEntity.ok(response);
