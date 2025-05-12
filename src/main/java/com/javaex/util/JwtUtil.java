@@ -44,18 +44,19 @@ public class JwtUtil {
 	////////////////////////////////////////////////////////
 
 	/*** 해더에서 사용자 no 추출 ***/
-	public static int getNoFromHeader(HttpServletRequest request) {
-		String token = getTokenByHeader(request);
+	public static Integer getNoFromHeader(HttpServletRequest request) {
+		try {
+			String token = getTokenByHeader(request);
 
-		if (token != null) {
-			boolean check = checkToken(token);
-
-			if (check) {
+			if (token != null && checkToken(token)) {
 				return Integer.parseInt(getSubjectFromToken(token));
 			}
+		} catch (Exception e) {
+			System.out.println("❌ 토큰 파싱 중 예외 발생: " + e.getMessage());
+			// 로그만 찍고 넘김
 		}
 
-		return -1;
+		return null; // ✅ -1 말고 null로 명확하게 처리
 	}
 
 	// 해더에서 토큰꺼내기
