@@ -90,7 +90,7 @@ public class SignupController {
             String userName = (authUser.getRole() != null && authUser.getRole().equals("company")) ? authUser.getCompanyName() : authUser.getName();
             result.put("userName", userName);
             // 필요시 기타 정보 추가
-
+            
 			return JsonResult.success(result);
 		}else {
 			return JsonResult.fail("로그인 실패");
@@ -101,12 +101,13 @@ public class SignupController {
 	@GetMapping(value="/api/member/data/{memberId}")
 	public JsonResult getMemberData(@PathVariable ("memberId") int memberId) {
 		SignupVo loginMemberVo = signupService.exeGetMemberData(memberId);
-		
+		System.out.println(loginMemberVo);
 		if(loginMemberVo != null) {
 			return JsonResult.success(loginMemberVo);
 		}else {
 			return JsonResult.fail("회원이름 가져오기 실패");
 		}
+		
 	};
 	
 	
