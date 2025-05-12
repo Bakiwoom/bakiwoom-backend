@@ -3,6 +3,7 @@ package com.javaex.idea.controller;
 import com.javaex.idea.service.PolicyAnalysisService;
 import com.javaex.idea.vo.AnalysisResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,6 +21,9 @@ public class PolicyAnalysisController {
     @Autowired
     private PolicyAnalysisService policyAnalysisService;
 
+    @Value("${ai.server.url}")
+    private String aiServerUrl;
+
     @PostMapping("/benefits")
     public ResponseEntity<?> forwardAnalysis(@RequestBody Map<String, Object> body) {
         RestTemplate restTemplate = new RestTemplate();
@@ -35,7 +39,7 @@ public class PolicyAnalysisController {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         ResponseEntity<String> response = restTemplate.postForEntity(
-                "http://localhost:8000/analyze/benefits",
+                aiServerUrl + "/analyze/benefits",
                 request,
                 String.class
         );

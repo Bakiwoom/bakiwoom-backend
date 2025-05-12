@@ -70,7 +70,7 @@ public class SignupService {
 				if(disabilityType != null && !disabilityType.equals("")){
 					disabilityId = signupDao.selectDisabilityId(disabilityType);
 				}else {
-					disabilityId = 5;
+					disabilityId = 3;
 				};
 				
 				// user_02 (장애정보 + member정보 + user정보) user테이블에 insert
