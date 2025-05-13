@@ -63,24 +63,23 @@
     
     <!-- 주목받는 공고 조회 -->
     <select id="getTrendingJobs" resultType="JobPostingVo">
-        SELECT jp.job_id AS jobId,
-               jp.company_id AS companyId,
-               jp.title,
-               jp.location,
-               jp.experience_level AS experienceLevel,
-               jp.deadline,
-               jp.bookmark_count AS bookmarkCount,
-               c.name AS companyName,
-               c.logo AS companyLogo,
-               dt.disability_name AS disabilityTypeName
-        FROM job_posting jp
-        JOIN company c ON jp.company_id = c.company_id
-        LEFT JOIN disability_types dt ON jp.disability_type_id = dt.id
-        WHERE jp.status = 'open'
-        AND jp.deadline >= CURRENT_DATE
-        AND jp.created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY)
-        ORDER BY jp.view_count DESC
-        LIMIT 4
+		SELECT jp.job_id AS jobId,
+			   jp.company_id AS companyId,
+			   jp.title,
+			   jp.location,
+			   jp.experience_level AS experienceLevel,
+			   jp.deadline,
+			   jp.bookmark_count AS bookmarkCount,
+			   c.name AS companyName,
+			   c.logo AS companyLogo,
+			   dt.disability_name AS disabilityTypeName
+		FROM job_posting jp
+		JOIN company c ON jp.company_id = c.company_id
+		LEFT JOIN disability_types dt ON jp.disability_type_id = dt.id
+		WHERE jp.status = 'open'
+		AND jp.deadline >= CURRENT_DATE
+		ORDER BY jp.apply_count DESC, jp.created_at DESC
+		LIMIT 4
     </select>
     
     <!-- ========== 북마크 관련 쿼리 ========== -->
