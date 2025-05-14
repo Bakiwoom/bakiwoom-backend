@@ -16,6 +16,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Map;
+
+import com.javaex.idea.dto.DisabledJobseekerDTO;
+import com.javaex.idea.service.DisabledJobseekerService;
 
 @Slf4j
 @Tag(name = "Public Data API", description = "공공데이터 API 엔드포인트")
@@ -26,6 +31,7 @@ public class PublicDataController {
     
     private final DisabledJobofferService disabledJobofferService;
     private final WelfareServiceService welfareServiceService;
+    private final DisabledJobseekerService disabledJobseekerService;
     
     @Operation(summary = "장애인 구인 실시간 현황 데이터 조회", description = "지역, 장애유형, 연령대별로 장애인 구인 실시간 현황을 조회합니다.")
     @GetMapping(value = "/disabled/job-offers", produces = "application/json")
@@ -98,5 +104,54 @@ public class PublicDataController {
                     }
                     return ResponseEntity.ok(detail);
                 });
+    }
+
+    @Operation(summary = "장애인 구직자 현황 데이터 갱신", description = "한국장애인고용공단 장애인 구직자 현황 데이터를 가져와 저장합니다. 이전 데이터는 유지됩니다.")
+    @PostMapping("/disabled/jobseekers/refresh")
+    public Mono<ResponseEntity<List<DisabledJobseekerDTO>>> refreshDisabledJobseekers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int perPage) {
+        log.info("장애인 구직자 현황 데이터 갱신 요청 - 페이지: {}, 데이터 수: {}", page, perPage);
+        return disabledJobseekerService.fetchAndSaveData(page, perPage)
+                .doOnSuccess(list -> log.info("장애인 구직자 현황 데이터 갱신 성공 - 새로 추가된 데이터 수: {}", list.size()))
+                .doOnError(e -> log.error("장애인 구직자 현황 데이터 갱신 실패", e))
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> {
+                    log.error("장애인 구직자 현황 데이터 갱신 중 오류 발생: {}", e.getMessage());
+                    return Mono.just(ResponseEntity.ok(Collections.emptyList()));
+                });
+    }
+
+    @Operation(summary = "장애인 구직자 현황 데이터 조회", description = "저장된 장애인 구직자 현황 데이터를 조회합니다.")
+    @GetMapping("/disabled/jobseekers")
+    public ResponseEntity<List<DisabledJobseekerDTO>> getDisabledJobseekers() {
+        log.info("장애인 구직자 현황 데이터 조회 요청");
+        List<DisabledJobseekerDTO> jobseekers = disabledJobseekerService.findAll();
+        log.info("장애인 구직자 현황 데이터 조회 결과 - 데이터 수: {}", jobseekers.size());
+        return ResponseEntity.ok(jobseekers);
+    }
+
+    @Operation(summary = "장애인 구직자 상세 조회", description = "ID로 특정 장애인 구직자 정보를 조회합니다.")
+    @GetMapping("/disabled/jobseekers/{id}")
+    public ResponseEntity<?> getDisabledJobseekerById(@PathVariable String id) {
+        log.info("장애인 구직자 상세 조회 요청 - ID: {}", id);
+        Optional<DisabledJobseekerDTO> result = disabledJobseekerService.findById(id);
+        
+        if (result.isPresent()) {
+            log.info("장애인 구직자 상세 조회 성공 - ID: {}", id);
+            return ResponseEntity.ok(result.get());
+        } else {
+            log.warn("장애인 구직자 상세 조회 실패 - 해당 ID가 없음: {}", id);
+            Map<String, String> errorResponse = Collections.singletonMap("error", "해당 ID의 구직자 정보가 없습니다: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
+    @Operation(summary = "장애인 구직자 데이터 초기화", description = "모든 장애인 구직자 데이터를 삭제합니다. (테스트용)")
+    @DeleteMapping("/disabled/jobseekers/all")
+    public ResponseEntity<?> clearDisabledJobseekers() {
+        log.info("장애인 구직자 데이터 초기화 요청");
+        disabledJobseekerService.clearAll();
+        return ResponseEntity.ok(Collections.singletonMap("message", "모든 장애인 구직자 데이터가 삭제되었습니다."));
     }
 } 
