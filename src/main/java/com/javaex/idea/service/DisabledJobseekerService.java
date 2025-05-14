@@ -47,29 +47,54 @@ public class DisabledJobseekerService {
     private static final String API_URL = "https://api.odcloud.kr/api/15014774/v1/uddi:bed031bf-2d7b-40ee-abef-b8e8ea0b0467";
     private static final String JSON_FILE_URL = "https://www.data.go.kr/catalog/15014774/fileData.json";
     private static final String DIRECT_DOWNLOAD_URL = "https://www.data.go.kr/upload/data/15014774/fileData.json";
-    private static final int MAX_RETRY_PAGES = 5; // 최대 재시도 페이지 수
+    private static final int MAX_FETCH_SIZE = 1000; // 한 번에 가져올 데이터 수
 
     // 데이터를 가져와 저장
-    public Mono<List<DisabledJobseekerDTO>> fetchAndSaveData(int page, int perPage) {
+    public Mono<List<DisabledJobseekerDTO>> fetchAndSaveData() {
         // 몽고DB 컬렉션이 존재하는지 확인 및 생성
         createCollectionIfNotExists();
-        return fetchDataWithoutDuplicates(page, perPage, new HashSet<>(), 0);
+        
+        // 마지막 저장된 연번 확인
+        Optional<Integer> lastSequenceNo = getLastSequenceNumber();
+        int startPage = calculateStartPage(lastSequenceNo.orElse(0));
+        
+        log.info("마지막 저장된 연번: {}, 시작 페이지: {}", lastSequenceNo.orElse(0), startPage);
+        
+        return fetchDataFromPage(startPage, MAX_FETCH_SIZE);
     }
     
-    // 중복 없이 데이터 가져오기 (재귀적으로 구현)
-    private Mono<List<DisabledJobseekerDTO>> fetchDataWithoutDuplicates(int page, int perPage, Set<Integer> processedIds, int retryCount) {
-        if (retryCount >= MAX_RETRY_PAGES) {
-            log.warn("최대 재시도 페이지 수({})에 도달했습니다. 더 이상 새 데이터를 가져오지 않습니다.", MAX_RETRY_PAGES);
-            return Mono.just(Collections.<DisabledJobseekerDTO>emptyList());
+    // 마지막 저장된 연번 확인
+    private Optional<Integer> getLastSequenceNumber() {
+        List<DisabledJobseekerDTO> existingData = repository.findAll();
+        if (existingData.isEmpty()) {
+            return Optional.of(0);
         }
         
-        log.info("페이지 {}: 데이터 가져오기 시도 중", page);
+        // 현재 저장된 최대 연번 찾기
+        return existingData.stream()
+                .map(DisabledJobseekerDTO::get연번)
+                .max(Integer::compareTo);
+    }
+    
+    // 시작 페이지 계산
+    private int calculateStartPage(int lastSequenceNo) {
+        // 이미 데이터가 있다면 마지막 연번 기준으로 다음 페이지부터 시작
+        if (lastSequenceNo > 0) {
+            return (lastSequenceNo / MAX_FETCH_SIZE) + 1;
+        }
+        // 데이터가 없으면 첫 페이지부터 시작
+        return 1;
+    }
+    
+    // 특정 페이지부터 데이터 가져오기
+    private Mono<List<DisabledJobseekerDTO>> fetchDataFromPage(int page, int perPage) {
+        log.info("페이지 {} 에서 {} 개의 데이터 가져오기 시도", page, perPage);
         
         String url = API_URL
             + "?serviceKey=" + apiKeyConfig.getEncodedKey()
             + "&page=" + page
-            + "&perPage=" + perPage
-            ;
+            + "&perPage=" + perPage;
+        
         log.info("공공데이터포털 API 호출: {}", url);
         
         return webClient.get()
@@ -90,7 +115,9 @@ public class DisabledJobseekerService {
                             return Collections.<DisabledJobseekerDTO>emptyList();
                         }
                         
-                        log.info("API에서 가져온 데이터 수: {}", dataItems.size());
+                        // 총 데이터 수 확인
+                        int totalCount = ((Number) response.get("totalCount")).intValue();
+                        log.info("API에서 가져온 데이터 수: {}, 총 데이터 수: {}", dataItems.size(), totalCount);
                         
                         // 항목 데이터를 DTO로 변환
                         List<DisabledJobseekerDTO> dtoList = new ArrayList<>();
@@ -119,79 +146,105 @@ public class DisabledJobseekerService {
                         }
                         
                         log.info("총 {}개의 구직자 데이터를 변환했습니다", dtoList.size());
-                        return dtoList;
+                        
+                        // 추가 정보 저장
+                        return new FetchResult(dtoList, totalCount);
                     } catch (Exception e) {
                         log.error("API 응답 처리 중 오류: {}", e.getMessage(), e);
                         throw new RuntimeException("API 응답 데이터 처리 중 오류 발생", e);
                     }
                 })
-                .flatMap(apiList -> {
-                    if (apiList.isEmpty()) {
+                .flatMap(result -> {
+                    FetchResult fetchResult = (FetchResult) result;
+                    
+                    if (fetchResult.getData().isEmpty()) {
                         log.warn("API에서 가져온 데이터가 없습니다. JSON 파일 다운로드를 시도합니다.");
                         // JSON 파일 다운로드 시도
-                        return tryJsonFileDownload(page, perPage);
+                        return tryJsonFileDownload();
                     } else {
-                        // 기존 데이터와 비교하여 중복 여부 확인
-                        List<String> newDataIds = apiList.stream()
+                        // 기존 데이터와 비교하여 중복 필터링
+                        List<String> newDataIds = fetchResult.getData().stream()
                                 .map(DisabledJobseekerDTO::getId)
                                 .collect(Collectors.toList());
                         
-                        // 기존 DB에서 이 연번들이 있는지 확인
+                        // 기존 DB에서 이 ID들이 있는지 확인
                         List<DisabledJobseekerDTO> existingData = repository.findByIdIn(newDataIds);
                         
-                        // 기존 데이터의 연번 집합
-                        Set<Integer> existingIds = existingData.stream()
-                                .map(DisabledJobseekerDTO::get연번)
+                        // 기존 데이터의 ID 집합
+                        Set<String> existingIds = existingData.stream()
+                                .map(DisabledJobseekerDTO::getId)
                                 .collect(Collectors.toSet());
                         
-                        // 처리된 ID 집합에 기존 ID 추가
-                        processedIds.addAll(existingIds);
-                        
                         // 신규 데이터만 필터링
-                        List<DisabledJobseekerDTO> newDataOnly = apiList.stream()
-                                .filter(dto -> !existingIds.contains(dto.get연번()))
+                        List<DisabledJobseekerDTO> newDataOnly = fetchResult.getData().stream()
+                                .filter(dto -> !existingIds.contains(dto.getId()))
                                 .collect(Collectors.toList());
                         
-                        if (newDataOnly.isEmpty()) {
-                            log.info("페이지 {}의 모든 데이터가 이미 DB에 존재합니다. 다음 페이지 시도...", page);
-                            // 재귀적으로 다음 페이지 호출
-                            return fetchDataWithoutDuplicates(page + 1, perPage, processedIds, retryCount + 1);
-                        } else {
+                        if (!newDataOnly.isEmpty()) {
                             // 신규 데이터만 저장
                             repository.saveAll(newDataOnly);
                             log.info("{}개의 신규 데이터를 MongoDB에 저장했습니다", newDataOnly.size());
-                            
-                            // 페이지 내 데이터가 모두 중복이 아닌 경우, 다음 페이지도 가져옴
-                            if (newDataOnly.size() < apiList.size()) {
-                                log.info("페이지 {}에서 일부 데이터만 신규입니다. 다음 페이지 시도...", page);
-                                // 재귀적으로 다음 페이지 호출하고 결과 합침
-                                return fetchDataWithoutDuplicates(page + 1, perPage, processedIds, 0)
-                                        .map(nextPageData -> {
-                                            List<DisabledJobseekerDTO> combinedList = new ArrayList<>(newDataOnly);
-                                            combinedList.addAll(nextPageData);
-                                            return combinedList;
-                                        });
-                            }
-                            
-                            return Mono.just(newDataOnly);
+                        } else {
+                            log.info("페이지 {}의 모든 데이터가 이미 DB에 존재합니다", page);
                         }
+                        
+                        // 마지막 페이지인지 확인
+                        boolean hasMorePages = hasMorePages(page, perPage, fetchResult.getTotalCount());
+                        
+                        if (hasMorePages) {
+                            log.info("다음 페이지가 있습니다. 페이지 {} 조회 중...", page + 1);
+                            // 다음 페이지 데이터 가져오기 (재귀 호출)
+                            return fetchDataFromPage(page + 1, perPage)
+                                    .map(nextPageData -> {
+                                        List<DisabledJobseekerDTO> combinedList = new ArrayList<>(newDataOnly);
+                                        combinedList.addAll(nextPageData);
+                                        return combinedList;
+                                    });
+                        }
+                        
+                        return Mono.just(newDataOnly);
                     }
                 })
                 .onErrorResume(WebClientResponseException.class, e -> {
                     log.error("API 요청 오류: {}, 상태 코드: {}, 응답 본문: {}", 
                             e.getMessage(), e.getStatusCode(), e.getResponseBodyAsString());
                     // API 호출 실패 시 JSON 파일 다운로드 시도
-                    return tryJsonFileDownload(page, perPage);
+                    return tryJsonFileDownload();
                 })
                 .onErrorResume(Exception.class, e -> {
                     log.error("API 처리 중 예외 발생: {}", e.getMessage(), e);
                     // 예외 발생 시 JSON 파일 다운로드 시도
-                    return tryJsonFileDownload(page, perPage);
+                    return tryJsonFileDownload();
                 });
     }
     
+    // 더 페이지가 있는지 확인
+    private boolean hasMorePages(int currentPage, int perPage, int totalCount) {
+        int maxPages = (int) Math.ceil((double) totalCount / perPage);
+        return currentPage < maxPages;
+    }
+    
+    // API 결과 저장 내부 클래스
+    private static class FetchResult {
+        private final List<DisabledJobseekerDTO> data;
+        private final int totalCount;
+        
+        public FetchResult(List<DisabledJobseekerDTO> data, int totalCount) {
+            this.data = data;
+            this.totalCount = totalCount;
+        }
+        
+        public List<DisabledJobseekerDTO> getData() {
+            return data;
+        }
+        
+        public int getTotalCount() {
+            return totalCount;
+        }
+    }
+    
     // JSON 파일 다운로드 시도
-    private Mono<List<DisabledJobseekerDTO>> tryJsonFileDownload(int page, int perPage) {
+    private Mono<List<DisabledJobseekerDTO>> tryJsonFileDownload() {
         log.info("JSON 파일 다운로드 시도: {}", JSON_FILE_URL);
         
         return webClient.get()
@@ -201,7 +254,7 @@ public class DisabledJobseekerService {
                 .flatMap(jsonContent -> {
                     try {
                         log.info("JSON 파일 다운로드 성공, 데이터 처리 중...");
-                        List<DisabledJobseekerDTO> parsedData = parseJsonFile(jsonContent, page, perPage);
+                        List<DisabledJobseekerDTO> parsedData = parseJsonFile(jsonContent);
                         if (!parsedData.isEmpty()) {
                             // 기존 데이터와 비교하여 중복 필터링
                             List<String> newDataIds = parsedData.stream()
@@ -210,12 +263,12 @@ public class DisabledJobseekerService {
                             
                             List<DisabledJobseekerDTO> existingData = repository.findByIdIn(newDataIds);
                             
-                            Set<Integer> existingIds = existingData.stream()
-                                    .map(DisabledJobseekerDTO::get연번)
+                            Set<String> existingIds = existingData.stream()
+                                    .map(DisabledJobseekerDTO::getId)
                                     .collect(Collectors.toSet());
                             
                             List<DisabledJobseekerDTO> newDataOnly = parsedData.stream()
-                                    .filter(dto -> !existingIds.contains(dto.get연번()))
+                                    .filter(dto -> !existingIds.contains(dto.getId()))
                                     .collect(Collectors.toList());
                             
                             if (!newDataOnly.isEmpty()) {
@@ -228,26 +281,26 @@ public class DisabledJobseekerService {
                             }
                         } else {
                             log.warn("JSON 파일에서 추출한 데이터가 없습니다. 직접 다운로드를 시도합니다.");
-                            return tryDirectDownload(page, perPage);
+                            return tryDirectDownload();
                         }
                     } catch (Exception e) {
                         log.error("JSON 파일 처리 중 오류: {}", e.getMessage(), e);
-                        return tryDirectDownload(page, perPage);
+                        return tryDirectDownload();
                     }
                 })
                 .onErrorResume(WebClientResponseException.class, e -> {
                     log.error("JSON 파일 다운로드 오류: {}, 상태 코드: {}", 
                             e.getMessage(), e.getStatusCode());
-                    return tryDirectDownload(page, perPage);
+                    return tryDirectDownload();
                 })
                 .onErrorResume(Exception.class, e -> {
                     log.error("JSON 파일 다운로드 중 예외 발생: {}", e.getMessage(), e);
-                    return tryDirectDownload(page, perPage);
+                    return tryDirectDownload();
                 });
     }
     
     // 직접 다운로드 URL을 통한 시도
-    private Mono<List<DisabledJobseekerDTO>> tryDirectDownload(int page, int perPage) {
+    private Mono<List<DisabledJobseekerDTO>> tryDirectDownload() {
         log.info("직접 다운로드 URL 시도: {}", DIRECT_DOWNLOAD_URL);
         
         return Mono.fromCallable(() -> {
@@ -258,7 +311,7 @@ public class DisabledJobseekerService {
                     String content = new String(Files.readAllBytes(tempFile), StandardCharsets.UTF_8);
                     Files.deleteIfExists(tempFile); // 임시 파일 삭제
                     
-                    List<DisabledJobseekerDTO> parsedData = parseJsonFile(content, page, perPage);
+                    List<DisabledJobseekerDTO> parsedData = parseJsonFile(content);
                     if (!parsedData.isEmpty()) {
                         // 기존 데이터와 비교하여 중복 필터링
                         List<String> newDataIds = parsedData.stream()
@@ -267,12 +320,12 @@ public class DisabledJobseekerService {
                         
                         List<DisabledJobseekerDTO> existingData = repository.findByIdIn(newDataIds);
                         
-                        Set<Integer> existingIds = existingData.stream()
-                                .map(DisabledJobseekerDTO::get연번)
+                        Set<String> existingIds = existingData.stream()
+                                .map(DisabledJobseekerDTO::getId)
                                 .collect(Collectors.toSet());
                         
                         List<DisabledJobseekerDTO> newDataOnly = parsedData.stream()
-                                .filter(dto -> !existingIds.contains(dto.get연번()))
+                                .filter(dto -> !existingIds.contains(dto.getId()))
                                 .collect(Collectors.toList());
                         
                         if (!newDataOnly.isEmpty()) {
@@ -324,7 +377,7 @@ public class DisabledJobseekerService {
     }
     
     // JSON 파일 데이터 파싱
-    private List<DisabledJobseekerDTO> parseJsonFile(String jsonContent, int page, int perPage) {
+    private List<DisabledJobseekerDTO> parseJsonFile(String jsonContent) {
         try {
             Map<String, Object> jsonMap = objectMapper.readValue(jsonContent, Map.class);
             log.debug("JSON 파일 구조: {}", jsonMap.keySet());
@@ -346,36 +399,34 @@ public class DisabledJobseekerService {
                 return Collections.emptyList();
             }
             
-            // 페이징 처리 (요청된 페이지와 개수에 맞게 데이터 추출)
-            int startIndex = (page - 1) * perPage;
-            int endIndex = Math.min(startIndex + perPage, dataItems.size());
-            
-            if (startIndex >= dataItems.size()) {
-                log.warn("요청한 페이지가 데이터 범위를 벗어났습니다.");
-                return Collections.emptyList();
-            }
+            // 마지막 저장된 연번 확인
+            Optional<Integer> lastSequenceNo = getLastSequenceNumber();
+            int lastSeqNo = lastSequenceNo.orElse(0);
             
             List<DisabledJobseekerDTO> dtoList = new ArrayList<>();
-            for (int i = startIndex; i < endIndex; i++) {
+            for (Map<String, Object> item : dataItems) {
                 try {
-                    Map<String, Object> item = dataItems.get(i);
-                    DisabledJobseekerDTO dto = new DisabledJobseekerDTO();
-                    
-                    // 필드 매핑 (JSON 파일 필드 -> DTO 필드)
-                    dto.set연번(parseIntSafely(item.get("연번")));
-                    dto.set구직등록일(String.valueOf(item.get("구직등록일")));
-                    dto.set기관분류(String.valueOf(item.get("기관분류")));
-                    dto.set연령(parseIntSafely(item.get("연령")));
-                    dto.set장애유형(String.valueOf(item.get("장애유형")));
-                    dto.set중증여부(String.valueOf(item.get("중증여부")));
-                    dto.set희망임금(String.valueOf(item.get("희망임금")));
-                    dto.set희망지역(String.valueOf(item.get("희망지역")));
-                    dto.set희망직종(String.valueOf(item.get("희망직종")));
-                    
-                    // ID 설정
-                    dto.setId(String.valueOf(dto.get연번()));
-                    
-                    dtoList.add(dto);
+                    int seqNo = parseIntSafely(item.get("연번"));
+                    // 마지막 저장된 연번보다 큰 데이터만 처리
+                    if (seqNo > lastSeqNo) {
+                        DisabledJobseekerDTO dto = new DisabledJobseekerDTO();
+                        
+                        // 필드 매핑 (JSON 파일 필드 -> DTO 필드)
+                        dto.set연번(seqNo);
+                        dto.set구직등록일(String.valueOf(item.get("구직등록일")));
+                        dto.set기관분류(String.valueOf(item.get("기관분류")));
+                        dto.set연령(parseIntSafely(item.get("연령")));
+                        dto.set장애유형(String.valueOf(item.get("장애유형")));
+                        dto.set중증여부(String.valueOf(item.get("중증여부")));
+                        dto.set희망임금(String.valueOf(item.get("희망임금")));
+                        dto.set희망지역(String.valueOf(item.get("희망지역")));
+                        dto.set희망직종(String.valueOf(item.get("희망직종")));
+                        
+                        // ID 설정
+                        dto.setId(String.valueOf(dto.get연번()));
+                        
+                        dtoList.add(dto);
+                    }
                 } catch (Exception e) {
                     log.error("JSON 항목 변환 중 오류: {}", e.getMessage(), e);
                 }

@@ -108,18 +108,15 @@ public class PublicDataController {
 
     @Operation(summary = "장애인 구직자 현황 데이터 갱신", description = "한국장애인고용공단 장애인 구직자 현황 데이터를 가져와 저장합니다. 이전 데이터는 유지됩니다.")
     @PostMapping("/disabled/jobseekers/refresh")
-    public Mono<ResponseEntity<List<DisabledJobseekerDTO>>> refreshDisabledJobseekers(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int perPage) {
-        log.info("장애인 구직자 현황 데이터 갱신 요청 - 페이지: {}, 데이터 수: {}", page, perPage);
-        return disabledJobseekerService.fetchAndSaveData(page, perPage)
-                .doOnSuccess(list -> log.info("장애인 구직자 현황 데이터 갱신 성공 - 새로 추가된 데이터 수: {}", list.size()))
-                .doOnError(e -> log.error("장애인 구직자 현황 데이터 갱신 실패", e))
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    log.error("장애인 구직자 현황 데이터 갱신 중 오류 발생: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.ok(Collections.emptyList()));
-                });
+    public Mono<ResponseEntity<List<DisabledJobseekerDTO>>> refreshDisabledJobseekers() {
+        log.info("장애인 구직자 현황 데이터 갱신 요청");
+        
+        return disabledJobseekerService.fetchAndSaveData()
+                .map(data -> {
+                    log.info("장애인 구직자 현황 데이터 갱신 성공 - 새로 추가된 데이터 수: {}", data.size());
+                    return ResponseEntity.ok(data);
+                })
+                .onErrorReturn(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
     @Operation(summary = "장애인 구직자 현황 데이터 조회", description = "저장된 장애인 구직자 현황 데이터를 조회합니다.")
