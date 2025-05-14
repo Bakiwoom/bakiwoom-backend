@@ -15,6 +15,7 @@ public class SignupVo {
 	private String phoneNumber;
 	private String email;
 	private String name;
+	private String gender;
 	private String disabilityType;	//장애유형
 	private String disabilityURL;	//장애인등록증 url
 	private int isVerified;			//장애인 검증여부
@@ -27,9 +28,10 @@ public class SignupVo {
 		
 	}
 	
+
 	public SignupVo(int memberId, int userId, int companyId, int disabilityId, String id, String pw, String role,
-			int state, String phoneNumber, String email, String name, String disabilityType, String disabilityURL,
-			int isVerified, String businessNumber, String businessLicense, String companyName) {
+			int state, String phoneNumber, String email, String name, String gender, String disabilityType,
+			String disabilityURL, int isVerified, String businessNumber, String businessLicense, String companyName) {
 		super();
 		this.memberId = memberId;
 		this.userId = userId;
@@ -42,6 +44,7 @@ public class SignupVo {
 		this.phoneNumber = phoneNumber;
 		this.email = email;
 		this.name = name;
+		this.gender = gender;
 		this.disabilityType = disabilityType;
 		this.disabilityURL = disabilityURL;
 		this.isVerified = isVerified;
@@ -49,6 +52,8 @@ public class SignupVo {
 		this.businessLicense = businessLicense;
 		this.companyName = companyName;
 	}
+
+
 
 
 	public int getMemberId() {
@@ -216,14 +221,27 @@ public class SignupVo {
 		this.companyName = companyName;
 	}
 
+	
+	public String getGender() {
+		return gender;
+	}
+
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+
 	@Override
 	public String toString() {
 		return "SignupVo [memberId=" + memberId + ", userId=" + userId + ", companyId=" + companyId + ", disabilityId="
 				+ disabilityId + ", id=" + id + ", pw=" + pw + ", role=" + role + ", state=" + state + ", phoneNumber="
-				+ phoneNumber + ", email=" + email + ", name=" + name + ", disabilityType=" + disabilityType
-				+ ", disabilityURL=" + disabilityURL + ", isVerified=" + isVerified + ", businessNumber="
-				+ businessNumber + ", businessLicense=" + businessLicense + ", companyName=" + companyName + "]";
+				+ phoneNumber + ", email=" + email + ", name=" + name + ", gender=" + gender + ", disabilityType="
+				+ disabilityType + ", disabilityURL=" + disabilityURL + ", isVerified=" + isVerified
+				+ ", businessNumber=" + businessNumber + ", businessLicense=" + businessLicense + ", companyName="
+				+ companyName + "]";
 	}
+
 
 	
 }

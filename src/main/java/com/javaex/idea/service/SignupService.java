@@ -80,6 +80,7 @@ public class SignupService {
 				userVo.setName(dataVo.get("name"));
 				userVo.setPhoneNumber(dataVo.get("ph"));
 				userVo.setEmail(dataVo.get("email"));
+				userVo.setGender(dataVo.get("gender"));
 				userVo.setDisabilityId(disabilityId);
 				
 				try {

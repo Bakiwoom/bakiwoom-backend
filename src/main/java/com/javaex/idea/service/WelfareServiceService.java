@@ -18,6 +18,9 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import org.springframework.scheduling.annotation.Scheduled;
 import java.time.Duration;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 // import jakarta.annotation.PostConstruct;
 
 @Slf4j
@@ -292,9 +295,33 @@ public class WelfareServiceService {
     }
 
     public List<WelfareServiceListDTO> searchByKeywords(String keyword) {
-        log.info("[Service] searchByKeywords 진입 - keyword: {}", keyword);
-        List<WelfareServiceListDTO> results = listRepository.searchByKeywords(keyword);
-        log.info("[Service] searchByKeywords 결과 개수: {}", results.size());
+        String[] keywords = keyword.trim().split("\\s+");
+        List<WelfareServiceListDTO> allServices = listRepository.findAll();
+
+        // 각 서비스별 일치 개수 계산
+        List<Pair<WelfareServiceListDTO, Integer>> scored = new ArrayList<>();
+        for (WelfareServiceListDTO service : allServices) {
+            String titleNoSpace = service.getServNm().replaceAll("\\s+", "");
+            int matchCount = 0;
+            for (String kw : keywords) {
+                String kwNoSpace = kw.replaceAll("\\s+", "");
+                if (titleNoSpace.contains(kwNoSpace)) {
+                    matchCount++;
+                }
+            }
+            if (matchCount > 0) { // 한 개 이상 일치하는 경우만
+                scored.add(Pair.of(service, matchCount));
+            }
+        }
+
+        // 일치 개수(정확도) 기준 내림차순 정렬
+        scored.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+
+        // 결과만 추출
+        List<WelfareServiceListDTO> results = scored.stream()
+            .map(Pair::getKey)
+            .collect(Collectors.toList());
+
         return results;
     }
 
