@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
+import java.util.Arrays;
 
 import com.javaex.idea.dto.DisabledJobseekerDTO;
 import com.javaex.idea.service.DisabledJobseekerService;
@@ -121,11 +122,26 @@ public class PublicDataController {
 
     @Operation(summary = "장애인 구직자 현황 데이터 조회", description = "저장된 장애인 구직자 현황 데이터를 조회합니다.")
     @GetMapping("/disabled/jobseekers")
-    public ResponseEntity<List<DisabledJobseekerDTO>> getDisabledJobseekers() {
-        log.info("장애인 구직자 현황 데이터 조회 요청");
-        List<DisabledJobseekerDTO> jobseekers = disabledJobseekerService.findAll();
-        log.info("장애인 구직자 현황 데이터 조회 결과 - 데이터 수: {}", jobseekers.size());
-        return ResponseEntity.ok(jobseekers);
+    public ResponseEntity<Map<String, Object>> getDisabledJobseekers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String disabilityTypes) {
+        log.info("장애인 구직자 현황 데이터 조회 요청 - 페이지: {}, 크기: {}, 검색어: {}, 장애유형: {}", 
+                 page, size, search, disabilityTypes);
+        
+        // 쉼표로 구분된 장애유형 문자열을 리스트로 변환
+        List<String> disabilityTypeList = null;
+        if (disabilityTypes != null && !disabilityTypes.isEmpty()) {
+            disabilityTypeList = Arrays.asList(disabilityTypes.split(","));
+            log.info("장애유형 변환 결과: {}", disabilityTypeList);
+        }
+        
+        Map<String, Object> response = disabledJobseekerService.findPaged(page, size, search, disabilityTypeList);
+        log.info("장애인 구직자 현황 데이터 조회 결과 - 페이지: {}, 데이터 수: {}", page, 
+                ((List<DisabledJobseekerDTO>)response.get("content")).size());
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "장애인 구직자 상세 조회", description = "ID로 특정 장애인 구직자 정보를 조회합니다.")
@@ -150,5 +166,14 @@ public class PublicDataController {
         log.info("장애인 구직자 데이터 초기화 요청");
         disabledJobseekerService.clearAll();
         return ResponseEntity.ok(Collections.singletonMap("message", "모든 장애인 구직자 데이터가 삭제되었습니다."));
+    }
+
+    @Operation(summary = "장애인 구직자 장애유형 목록 조회", description = "등록된 모든 장애유형 목록을 조회합니다.")
+    @GetMapping("/disabled/jobseekers/disability-types")
+    public ResponseEntity<List<String>> getDisabilityTypes() {
+        log.info("장애인 구직자 장애유형 목록 조회 요청");
+        List<String> types = disabledJobseekerService.getDisabilityTypes();
+        log.info("장애유형 목록 조회 결과: {} 개", types.size());
+        return ResponseEntity.ok(types);
     }
 } 
