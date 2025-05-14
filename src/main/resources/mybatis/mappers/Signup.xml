@@ -27,8 +27,8 @@
 	<insert id="insertUser" parameterType="SignupVo">
 	
 		<![CDATA[
-			insert into user(member_id, name, phone_number, disability_type_id, is_verified, email, disability_image_url)
-			values (#{memberId}, #{name}, #{phoneNumber}, #{disabilityId}, 0, #{email}, #{disabilityURL})
+			insert into user(member_id, name, phone_number, disability_type_id, is_verified, email, disability_image_url, gender)
+			values (#{memberId}, #{name}, #{phoneNumber}, #{disabilityId}, 0, #{email}, #{disabilityURL}, #{gender})
 		]]>
 	
 	</insert>
