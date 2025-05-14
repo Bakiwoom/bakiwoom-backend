@@ -14,11 +14,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(@NonNull CorsRegistry registry) {
 		registry.addMapping("/**")
-			.allowedOriginPatterns("http://localhost:3000", "http://localhost:8000", "http://43.201.102.244:8082") // 프론트엔드와 AI 서버 허용
-			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
-			.allowedHeaders("*")
-			.exposedHeaders("Authorization")
-			.allowCredentials(true);
+				.allowedOriginPatterns("http://localhost:3000", "http://localhost:8000", "http://localhost:8082",
+						"http://43.201.102.244:8000", "http://43.201.102.244:8082", "http://43.201.102.244")
+				.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH").allowedHeaders("*")
+				.exposedHeaders("Authorization").allowCredentials(true);
 	}
 
 	@Override
