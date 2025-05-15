@@ -5,6 +5,7 @@ import com.javaex.idea.service.DisabledJobofferService;
 import com.javaex.idea.dto.WelfareServiceListDTO;
 import com.javaex.idea.dto.WelfareServiceDetailDTO;
 import com.javaex.idea.service.WelfareServiceService;
+import com.javaex.idea.dto.DisabilityTypeStatsDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -175,5 +176,23 @@ public class PublicDataController {
         List<String> types = disabledJobseekerService.getDisabilityTypes();
         log.info("장애유형 목록 조회 결과: {} 개", types.size());
         return ResponseEntity.ok(types);
+    }
+
+    @Operation(summary = "장애유형별 통계 조회", description = "특정 장애유형에 대한 상세 통계 정보를 조회합니다.")
+    @GetMapping("/disabled/jobseekers/stats/{disabilityType}")
+    public ResponseEntity<DisabilityTypeStatsDTO> getDisabilityTypeStats(@PathVariable String disabilityType) {
+        log.info("장애유형별 통계 조회 요청 - 장애유형: {}", disabilityType);
+        
+        try {
+            DisabilityTypeStatsDTO stats = disabledJobseekerService.getDisabilityTypeStats(disabilityType);
+            log.info("장애유형별 통계 조회 성공 - 장애유형: {}", disabilityType);
+            return ResponseEntity.ok(stats);
+        } catch (IllegalArgumentException e) {
+            log.warn("장애유형별 통계 조회 실패 - 잘못된 요청: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("장애유형별 통계 조회 실패 - 서버 오류: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 } 

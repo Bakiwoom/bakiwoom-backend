@@ -1,6 +1,7 @@
 package com.javaex.idea.service;
 
 import com.javaex.idea.dto.DisabledJobseekerDTO;
+import com.javaex.idea.dto.DisabilityTypeStatsDTO;
 import com.javaex.config.ApiKeyConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.bson.Document;
+import org.springframework.data.mongodb.core.query.Criteria;
 import jakarta.annotation.PostConstruct;
 
 @Slf4j
@@ -46,6 +51,47 @@ public class DisabledJobseekerService {
     private static final String API_URL = "https://api.odcloud.kr/api/15014774/v1/uddi:bed031bf-2d7b-40ee-abef-b8e8ea0b0467";
     private static final int MAX_FETCH_SIZE = 1000; // 한 번에 가져올 데이터 수
 
+    // --- 집계 결과 매핑 DTO 정의 시작 ---
+    public static class DistributionItemDTO {
+        private Object _id;
+        private long count;
+
+        public Object get_id() { return _id; }
+        public void set_id(Object _id) { this._id = _id; }
+        public long getCount() { return count; }
+        public void setCount(long count) { this.count = count; }
+    }
+
+    public static class CombinedStatsIdDTO {
+        private String severity;
+        private String region;
+        private String ageGroup;
+        private String jobType;
+        private String salary;
+
+        public String getSeverity() { return severity; }
+        public void setSeverity(String severity) { this.severity = severity; }
+        public String getRegion() { return region; }
+        public void setRegion(String region) { this.region = region; }
+        public String getAgeGroup() { return ageGroup; }
+        public void setAgeGroup(String ageGroup) { this.ageGroup = ageGroup; }
+        public String getJobType() { return jobType; }
+        public void setJobType(String jobType) { this.jobType = jobType; }
+        public String getSalary() { return salary; }
+        public void setSalary(String salary) { this.salary = salary; }
+    }
+
+    public static class CombinedAggregationResultDTO {
+        private CombinedStatsIdDTO _id;
+        private long count;
+
+        public CombinedStatsIdDTO get_id() { return _id; }
+        public void set_id(CombinedStatsIdDTO _id) { this._id = _id; }
+        public long getCount() { return count; }
+        public void setCount(long count) { this.count = count; }
+    }
+    // --- 집계 결과 매핑 DTO 정의 끝 ---
+
     // 서비스 초기화 시 인덱스 생성
     @PostConstruct
     public void init() {
@@ -57,23 +103,14 @@ public class DisabledJobseekerService {
         try {
             log.info("MongoDB 인덱스 생성 시작");
             
-            // 기본 ID 필드 인덱스
             mongoTemplate.indexOps(DisabledJobseekerDTO.class)
                 .ensureIndex(new Index().on("id", org.springframework.data.domain.Sort.Direction.ASC).named("id_idx"));
-            
-            // 장애유형 인덱스
             mongoTemplate.indexOps(DisabledJobseekerDTO.class)
                 .ensureIndex(new Index().on("장애유형", org.springframework.data.domain.Sort.Direction.ASC).named("disability_type_idx"));
-            
-            // 희망직종 인덱스
             mongoTemplate.indexOps(DisabledJobseekerDTO.class)
                 .ensureIndex(new Index().on("희망직종", org.springframework.data.domain.Sort.Direction.ASC).named("job_type_idx"));
-            
-            // 희망지역 인덱스
             mongoTemplate.indexOps(DisabledJobseekerDTO.class)
                 .ensureIndex(new Index().on("희망지역", org.springframework.data.domain.Sort.Direction.ASC).named("region_idx"));
-                
-            // 연번 인덱스
             mongoTemplate.indexOps(DisabledJobseekerDTO.class)
                 .ensureIndex(new Index().on("연번", org.springframework.data.domain.Sort.Direction.ASC).named("seq_no_idx"));
             
@@ -83,52 +120,35 @@ public class DisabledJobseekerService {
         }
     }
 
-    // 데이터를 가져와 저장
     public Mono<List<DisabledJobseekerDTO>> fetchAndSaveData() {
-        // 몽고DB 컬렉션이 존재하는지 확인 및 생성
         createCollectionIfNotExists();
-        
-        // 마지막 저장된 연번 확인
         Optional<Integer> lastSequenceNo = getLastSequenceNumber();
         int startPage = calculateStartPage(lastSequenceNo.orElse(0));
-        
         log.info("마지막 저장된 연번: {}, 시작 페이지: {}", lastSequenceNo.orElse(0), startPage);
-        
         return fetchDataFromPage(startPage, MAX_FETCH_SIZE);
     }
     
-    // 마지막 저장된 연번 확인
     private Optional<Integer> getLastSequenceNumber() {
         List<DisabledJobseekerDTO> existingData = repository.findAll();
         if (existingData.isEmpty()) {
             return Optional.of(0);
         }
-        
-        // 현재 저장된 최대 연번 찾기
         return existingData.stream()
                 .map(DisabledJobseekerDTO::get연번)
                 .max(Integer::compareTo);
     }
     
-    // 시작 페이지 계산
     private int calculateStartPage(int lastSequenceNo) {
-        // 이미 데이터가 있다면 마지막 연번 기준으로 다음 페이지부터 시작
         if (lastSequenceNo > 0) {
             return (lastSequenceNo / MAX_FETCH_SIZE) + 1;
         }
-        // 데이터가 없으면 첫 페이지부터 시작
         return 1;
     }
     
-    // 특정 페이지부터 데이터 가져오기
+    @SuppressWarnings("unchecked") // API 응답의 'data' 필드 캐스팅 관련
     private Mono<List<DisabledJobseekerDTO>> fetchDataFromPage(int page, int perPage) {
         log.info("페이지 {} 에서 {} 개의 데이터 가져오기 시도", page, perPage);
-        
-        String url = API_URL
-            + "?serviceKey=" + apiKeyConfig.getEncodedKey()
-            + "&page=" + page
-            + "&perPage=" + perPage;
-        
+        String url = API_URL + "?serviceKey=" + apiKeyConfig.getEncodedKey() + "&page=" + page + "&perPage=" + perPage;
         log.info("공공데이터포털 API 호출: {}", url);
         
         return webClient.get()
@@ -142,24 +162,19 @@ public class DisabledJobseekerService {
                         Map<String, Object> response = objectMapper.readValue(body, Map.class);
                         log.info("API 응답 구조: {}", response.keySet());
                         
-                        // 데이터 추출 (공공데이터포털 오픈API 응답 구조)
                         List<Map<String, Object>> dataItems = (List<Map<String, Object>>) response.get("data");
                         if (dataItems == null || dataItems.isEmpty()) {
                             log.warn("API 응답에 'data' 키가 없거나 비어있습니다");
-                            return Collections.<DisabledJobseekerDTO>emptyList();
+                            return new FetchResult(Collections.<DisabledJobseekerDTO>emptyList(), 0); // totalCount 0으로 수정
                         }
                         
-                        // 총 데이터 수 확인
-                        int totalCount = ((Number) response.get("totalCount")).intValue();
-                        log.info("API에서 가져온 데이터 수: {}, 총 데이터 수: {}", dataItems.size(), totalCount);
+                        int totalCountFromApi = response.containsKey("totalCount") ? ((Number) response.get("totalCount")).intValue() : 0;
+                        log.info("API에서 가져온 데이터 수: {}, 총 데이터 수: {}", dataItems.size(), totalCountFromApi);
                         
-                        // 항목 데이터를 DTO로 변환
                         List<DisabledJobseekerDTO> dtoList = new ArrayList<>();
                         for (Map<String, Object> item : dataItems) {
                             try {
                                 DisabledJobseekerDTO dto = new DisabledJobseekerDTO();
-                                
-                                // 필드 매핑 (API 응답 필드 -> DTO 필드)
                                 dto.set연번(parseIntSafely(item.get("연번")));
                                 dto.set구직등록일(String.valueOf(item.get("구직등록일")));
                                 dto.set기관분류(String.valueOf(item.get("기관분류")));
@@ -169,64 +184,45 @@ public class DisabledJobseekerService {
                                 dto.set희망임금(String.valueOf(item.get("희망임금")));
                                 dto.set희망지역(String.valueOf(item.get("희망지역")));
                                 dto.set희망직종(String.valueOf(item.get("희망직종")));
-                                
-                                // ID 설정
                                 dto.setId(String.valueOf(dto.get연번()));
-                                
                                 dtoList.add(dto);
                             } catch (Exception e) {
                                 log.error("항목 변환 중 오류: {}", e.getMessage(), e);
                             }
                         }
-                        
                         log.info("총 {}개의 구직자 데이터를 변환했습니다", dtoList.size());
-                        
-                        // 추가 정보 저장
-                        return new FetchResult(dtoList, totalCount);
+                        return new FetchResult(dtoList, totalCountFromApi);
                     } catch (Exception e) {
                         log.error("API 응답 처리 중 오류: {}", e.getMessage(), e);
                         throw new RuntimeException("API 응답 데이터 처리 중 오류 발생", e);
                     }
                 })
-                .flatMap(result -> {
-                    FetchResult fetchResult = (FetchResult) result;
-                    
+                .flatMap(fetchResult -> { // FetchResult 타입 명시 제거
                     if (fetchResult.getData().isEmpty()) {
                         log.warn("API에서 가져온 데이터가 없습니다.");
                         return Mono.just(Collections.<DisabledJobseekerDTO>emptyList());
                     } else {
-                        // 기존 데이터와 비교하여 중복 필터링
                         List<String> newDataIds = fetchResult.getData().stream()
                                 .map(DisabledJobseekerDTO::getId)
                                 .collect(Collectors.toList());
-                        
-                        // 기존 DB에서 이 ID들이 있는지 확인
-                        List<DisabledJobseekerDTO> existingData = repository.findByIdIn(newDataIds);
-                        
-                        // 기존 데이터의 ID 집합
-                        Set<String> existingIds = existingData.stream()
+                        List<DisabledJobseekerDTO> existingDataInDB = repository.findByIdIn(newDataIds); // 변수명 변경
+                        Set<String> existingIdsInDB = existingDataInDB.stream() // 변수명 변경
                                 .map(DisabledJobseekerDTO::getId)
                                 .collect(Collectors.toSet());
-                        
-                        // 신규 데이터만 필터링
                         List<DisabledJobseekerDTO> newDataOnly = fetchResult.getData().stream()
-                                .filter(dto -> !existingIds.contains(dto.getId()))
+                                .filter(dto -> !existingIdsInDB.contains(dto.getId()))
                                 .collect(Collectors.toList());
                         
                         if (!newDataOnly.isEmpty()) {
-                            // 신규 데이터만 저장
                             repository.saveAll(newDataOnly);
                             log.info("{}개의 신규 데이터를 MongoDB에 저장했습니다", newDataOnly.size());
                         } else {
                             log.info("페이지 {}의 모든 데이터가 이미 DB에 존재합니다", page);
                         }
                         
-                        // 마지막 페이지인지 확인
                         boolean hasMorePages = hasMorePages(page, perPage, fetchResult.getTotalCount());
-                        
                         if (hasMorePages) {
                             log.info("다음 페이지가 있습니다. 페이지 {} 조회 중...", page + 1);
-                            // 다음 페이지 데이터 가져오기 (재귀 호출)
                             return fetchDataFromPage(page + 1, perPage)
                                     .map(nextPageData -> {
                                         List<DisabledJobseekerDTO> combinedList = new ArrayList<>(newDataOnly);
@@ -234,213 +230,394 @@ public class DisabledJobseekerService {
                                         return combinedList;
                                     });
                         }
-                        
                         return Mono.just(newDataOnly);
                     }
                 })
                 .onErrorResume(WebClientResponseException.class, e -> {
                     log.error("API 요청 오류: {}, 상태 코드: {}, 응답 본문: {}", 
                             e.getMessage(), e.getStatusCode(), e.getResponseBodyAsString());
-                    // API 호출 실패 시 빈 리스트 반환
                     return Mono.just(Collections.<DisabledJobseekerDTO>emptyList());
                 })
                 .onErrorResume(Exception.class, e -> {
                     log.error("API 처리 중 예외 발생: {}", e.getMessage(), e);
-                    // 예외 발생 시 빈 리스트 반환
                     return Mono.just(Collections.<DisabledJobseekerDTO>emptyList());
                 });
     }
     
-    // 더 페이지가 있는지 확인
     private boolean hasMorePages(int currentPage, int perPage, int totalCount) {
+        if (perPage <= 0) return false; // perPage가 0 이하인 경우 방지
         int maxPages = (int) Math.ceil((double) totalCount / perPage);
         return currentPage < maxPages;
     }
     
-    // API 결과 저장 내부 클래스
     private static class FetchResult {
         private final List<DisabledJobseekerDTO> data;
         private final int totalCount;
-        
         public FetchResult(List<DisabledJobseekerDTO> data, int totalCount) {
             this.data = data;
             this.totalCount = totalCount;
         }
-        
-        public List<DisabledJobseekerDTO> getData() {
-            return data;
-        }
-        
-        public int getTotalCount() {
-            return totalCount;
-        }
+        public List<DisabledJobseekerDTO> getData() { return data; }
+        public int getTotalCount() { return totalCount; }
     }
     
-    // 컬렉션 생성 확인
     private void createCollectionIfNotExists() {
-        try {
-            // 더미 문서 생성 후 삭제하여 컬렉션 존재 보장
-            DisabledJobseekerDTO dummy = new DisabledJobseekerDTO();
-            dummy.setId("temp_" + System.currentTimeMillis());
-            repository.save(dummy);
-            repository.deleteById(dummy.getId());
-            log.info("'disabled_jobseekers' 컬렉션 확인 완료");
-        } catch (Exception e) {
-            log.error("컬렉션 생성 중 오류 발생: {}", e.getMessage());
+        if (!mongoTemplate.collectionExists(DisabledJobseekerDTO.class)) {
+            mongoTemplate.createCollection(DisabledJobseekerDTO.class);
+            log.info("'disabled_jobseekers' 컬렉션 생성 완료");
+        } else {
+            log.info("'disabled_jobseekers' 컬렉션 확인 완료 (이미 존재)");
         }
     }
 
-    // DB에서 조회
     public List<DisabledJobseekerDTO> findAll() {
         return repository.findAll();
     }
     
-    // 페이징 처리된 데이터 조회
     public Map<String, Object> findPaged(int page, int size) {
         return findPaged(page, size, null, null);
     }
     
-    // 페이징 처리 및 필터링된 데이터 조회
     public Map<String, Object> findPaged(int page, int size, String search, List<String> disabilityTypes) {
         log.info("페이징 처리된 장애인 구직자 데이터 조회 - 페이지: {}, 크기: {}, 검색어: {}, 장애유형: {}", 
                  page, size, search, disabilityTypes);
-        
-        // 페이지 인덱스는 0부터 시작
-        int pageIndex = page - 1;
-        if (pageIndex < 0) pageIndex = 0;
+        int pageIndex = Math.max(0, page - 1);
         
         try {
-            // MongoDB에서 바로 페이징 처리된 데이터를 가져오기
             List<DisabledJobseekerDTO> pagedData;
-            int totalItems;
+            long totalItems; // long 타입으로 변경
             
             if ((search == null || search.trim().isEmpty()) && (disabilityTypes == null || disabilityTypes.isEmpty())) {
-                // 필터링이 없는 경우 - MongoDB 페이징 사용
                 Pageable pageable = PageRequest.of(pageIndex, size);
                 Page<DisabledJobseekerDTO> dataPage = repository.findAll(pageable);
                 pagedData = dataPage.getContent();
-                totalItems = (int) dataPage.getTotalElements();
+                totalItems = dataPage.getTotalElements();
                 log.info("MongoDB 페이징을 사용하여 데이터 조회 완료 - 결과 수: {}, 총 항목 수: {}", pagedData.size(), totalItems);
             } else {
-                // 필터링이 필요한 경우
                 log.info("필터링이 필요한 조회 수행");
-                
-                // 필터 조건 구성
                 List<DisabledJobseekerDTO> filteredData;
-                
                 if (search != null && !search.trim().isEmpty()) {
-                    // 검색어 필터링 - MongoDB의 텍스트 검색 활용
-                    String searchLower = search.toLowerCase();
+                    String searchLower = search.toLowerCase(); // 이미 Repository에서 i 옵션 사용 중
                     if (disabilityTypes != null && !disabilityTypes.isEmpty()) {
-                        // 검색어와 장애유형 모두 필터링
-                        filteredData = repository.findBySearchTextAndDisabilityTypes(searchLower, disabilityTypes);
+                        filteredData = repository.findBySearchTextAndDisabilityTypes(search, disabilityTypes); // 원본 search 사용
                         log.info("검색어와 장애유형으로 필터링된 데이터 수: {}", filteredData.size());
                     } else {
-                        // 검색어로만 필터링
-                        filteredData = repository.findBySearchText(searchLower);
+                        filteredData = repository.findBySearchText(search); // 원본 search 사용
                         log.info("검색어로 필터링된 데이터 수: {}", filteredData.size());
                     }
                 } else if (disabilityTypes != null && !disabilityTypes.isEmpty()) {
-                    // 장애유형으로만 필터링
                     filteredData = repository.findByDisabilityTypes(disabilityTypes);
                     log.info("장애유형으로 필터링된 데이터 수: {}", filteredData.size());
                 } else {
-                    // 필터링 조건이 없는 경우 (여기에 도달하지 않아야 함)
                     filteredData = Collections.emptyList();
                 }
-                
                 totalItems = filteredData.size();
-                
-                // 메모리에서 페이징 처리
                 int fromIndex = pageIndex * size;
-                int toIndex = Math.min(fromIndex + size, totalItems);
-                
-                // 페이지 범위 검증
-                if (fromIndex >= totalItems) {
-                    if (totalItems > 0) {
-                        fromIndex = (totalItems / size) * size;
-                        toIndex = totalItems;
-                    } else {
-                        fromIndex = 0;
-                        toIndex = 0;
-                    }
-                }
-                
-                pagedData = (fromIndex < toIndex) ? filteredData.subList(fromIndex, toIndex) : Collections.emptyList();
+                int toIndex = Math.min(fromIndex + size, (int) totalItems); // totalItems를 int로 캐스팅
+                pagedData = (fromIndex < toIndex && fromIndex < totalItems) ? filteredData.subList(fromIndex, toIndex) : Collections.emptyList(); // fromIndex < totalItems 조건 추가
                 log.info("메모리 내 페이징을 사용하여 필터링된 데이터 조회 완료 - 결과 수: {}", pagedData.size());
             }
             
-            // 전체 페이지 수 계산
-            int totalPages = (int) Math.ceil((double) totalItems / size);
+            int totalPages = (size > 0) ? (int) Math.ceil((double) totalItems / size) : 0; // size가 0인 경우 방지
             
-            // 결과 맵 구성
             Map<String, Object> result = new HashMap<>();
             result.put("content", pagedData);
             result.put("totalItems", totalItems);
             result.put("totalPages", totalPages);
             result.put("currentPage", page);
-            
             return result;
         } catch (Exception e) {
             log.error("페이징 데이터 조회 중 오류 발생: {}", e.getMessage(), e);
-            
-            // 오류 발생 시 빈 결과 반환
             Map<String, Object> errorResult = new HashMap<>();
             errorResult.put("content", Collections.emptyList());
-            errorResult.put("totalItems", 0);
+            errorResult.put("totalItems", 0L); // long 타입
             errorResult.put("totalPages", 0);
             errorResult.put("currentPage", page);
             errorResult.put("error", "데이터 조회 중 오류가 발생했습니다: " + e.getMessage());
-            
             return errorResult;
         }
     }
     
-    // ID로 특정 구직자 조회
     public Optional<DisabledJobseekerDTO> findById(String id) {
         return repository.findById(id);
     }
     
-    // 장애유형 목록 가져오기
     public List<String> getDisabilityTypes() {
         try {
-            // MongoDB의 distinct 쿼리를 사용하여 고유한 장애유형 목록 가져오기
             List<String> types = mongoTemplate.getCollection("disabled_jobseekers")
                 .distinct("장애유형", String.class)
+                .filter(new org.bson.Document("장애유형", new org.bson.Document("$ne", null).append("$ne", ""))) // null 및 빈 문자열 제외
                 .into(new ArrayList<>());
-            
-            // null과 빈 문자열 제거 후 정렬
-            return types.stream()
-                .filter(type -> type != null && !type.trim().isEmpty())
-                .sorted()
-                .collect(Collectors.toList());
+            Collections.sort(types); // 정렬
+            return types;
         } catch (Exception e) {
             log.error("장애유형 목록 조회 중 오류 발생: {}", e.getMessage(), e);
             return Collections.emptyList();
         }
     }
     
-    // 데이터베이스 초기화 (테스트용)
     public void clearAll() {
         repository.deleteAll();
         log.info("disabled_jobseekers 컬렉션의 모든 데이터가 삭제되었습니다.");
     }
     
-    // 테스트용 메서드 추가
     public String getServiceStatus() {
         return "정상 작동 중";
     }
 
-    // 정수 파싱 안전하게 처리
     private int parseIntSafely(Object value) {
         if (value == null) return 0;
         try {
             if (value instanceof Number) {
                 return ((Number) value).intValue();
             }
-            return Integer.parseInt(String.valueOf(value));
+            String strValue = String.valueOf(value).trim();
+            if (strValue.isEmpty()) return 0;
+            return Integer.parseInt(strValue);
         } catch (NumberFormatException e) {
+            log.warn("정수 파싱 오류 값: '{}'", value, e);
             return 0;
         }
+    }
+
+    public DisabilityTypeStatsDTO getDisabilityTypeStats(String disabilityType) {
+        log.info("장애유형별 통계 계산 시작 - 장애유형: {}", disabilityType);
+        if (disabilityType == null || disabilityType.trim().isEmpty()) {
+            throw new IllegalArgumentException("장애유형은 필수 파라미터입니다.");
+        }
+        
+        DisabilityTypeStatsDTO stats = new DisabilityTypeStatsDTO();
+        stats.setDisabilityType(disabilityType);
+        
+        try {
+            long totalCount = repository.count();
+            stats.setTotalCount(totalCount);
+            
+            Criteria disabilityCriteria = Criteria.where("장애유형").is(disabilityType);
+            long disabilityTypeCount = mongoTemplate.count(new org.springframework.data.mongodb.core.query.Query(disabilityCriteria), DisabledJobseekerDTO.class);
+            stats.setDisabilityTypeCount(disabilityTypeCount);
+            
+            if (totalCount > 0) { // 0으로 나누는 것 방지
+                double percentage = (double) disabilityTypeCount / totalCount * 100;
+                stats.setPercentage(Math.round(percentage * 100) / 100.0);
+            } else {
+                stats.setPercentage(0.0);
+            }
+            
+            stats.setSeverityDistribution(getSeverityDistribution(disabilityType));
+            stats.setRegionDistribution(getRegionDistribution(disabilityType));
+            stats.setAgeDistribution(getAgeDistribution(disabilityType));
+            stats.setJobTypeDistribution(getJobTypeDistribution(disabilityType));
+            stats.setSalaryDistribution(getSalaryDistribution(disabilityType));
+            stats.setCombinedStats(getCombinedStats(disabilityType, disabilityTypeCount)); // totalCount 대신 disabilityTypeCount 사용
+            
+            log.info("장애유형별 통계 계산 완료 - 장애유형: {}, 인원: {}/{} ({}%)",
+                    disabilityType, disabilityTypeCount, totalCount, stats.getPercentage());
+            return stats;
+        } catch (Exception e) {
+            log.error("장애유형별 통계 계산 중 오류 발생: {}", e.getMessage(), e);
+            // 오류 발생 시, 기본값으로 채워진 stats 객체 반환 고려 또는 예외 전파
+            // 여기서는 예외를 다시 던져 상위에서 처리하도록 함
+            throw new RuntimeException("통계 계산 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
+    }
+
+    private Map<String, Long> getSeverityDistribution(String disabilityType) {
+        try {
+            MatchOperation matchOperation = Aggregation.match(Criteria.where("장애유형").is(disabilityType));
+            GroupOperation groupOperation = Aggregation.group("중증여부").count().as("count");
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation);
+            
+            AggregationResults<DistributionItemDTO> results = mongoTemplate.aggregate(
+                    aggregation, "disabled_jobseekers", DistributionItemDTO.class);
+            
+            Map<String, Long> distribution = new HashMap<>();
+            for (DistributionItemDTO item : results.getMappedResults()) {
+                String key = item.get_id() != null ? item.get_id().toString() : "미분류";
+                distribution.put(key, item.getCount());
+            }
+            log.debug("[getSeverityDistribution] for {}: {}", disabilityType, distribution);
+            return distribution;
+        } catch (Exception e) {
+            log.error("중증/경증 분포 집계 중 오류 ({}): {}", disabilityType, e.getMessage(), e);
+            return Collections.emptyMap();
+        }
+    }
+    
+    private Map<String, Long> getRegionDistribution(String disabilityType) {
+        try {
+            MatchOperation matchOperation = Aggregation.match(
+                Criteria.where("장애유형").is(disabilityType)
+                        .and("희망지역").exists(true).ne(null).ne("")
+            );
+            
+            ProjectionOperation projectOperation = Aggregation.project()
+                    .and(ctx -> Document.parse("{ $arrayElemAt: [{ $split: ['$희망지역', ' '] }, 0] }")).as("시도지역");
+
+            GroupOperation groupOperation = Aggregation.group("시도지역").count().as("count");
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, projectOperation, groupOperation);
+            
+            AggregationResults<DistributionItemDTO> results = mongoTemplate.aggregate(
+                    aggregation, "disabled_jobseekers", DistributionItemDTO.class);
+            
+            Map<String, Long> distribution = new HashMap<>();
+            for (DistributionItemDTO item : results.getMappedResults()) {
+                String key = item.get_id() != null ? item.get_id().toString() : "미분류";
+                distribution.put(key, item.getCount());
+            }
+            log.debug("[getRegionDistribution] for {}: {}", disabilityType, distribution); 
+            return distribution;
+        } catch (Exception e) {
+            log.error("지역별 분포 집계 중 오류 ({}): {}", disabilityType, e.getMessage(), e); 
+            return Collections.emptyMap();
+        }
+    }
+    
+    private Map<String, Long> getAgeDistribution(String disabilityType) {
+        try {
+            MatchOperation matchOperation = Aggregation.match(
+                Criteria.where("장애유형").is(disabilityType)
+                        .and("연령").exists(true).ne(null)
+            );
+
+            String ageProjectionExpression = "{ $cond: { " +
+                                             "  if: { $and: [ { $ne: ['$연령', null] }, { $in: [ { $type: '$연령' }, ['int', 'long', 'double', 'decimal'] ] } ] }, " +
+                                             "  then: { $concat: [{ $toString: { $floor: { $divide: ['$연령', 10] } } }, '0대'] }, " +
+                                             "  else: '미분류' " +
+                                             "}}";
+            ProjectionOperation projectOperation = Aggregation.project()
+                    .and(ctx -> Document.parse(ageProjectionExpression)).as("연령대");
+
+            GroupOperation groupOperation = Aggregation.group("연령대").count().as("count");
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, projectOperation, groupOperation);
+            
+            AggregationResults<DistributionItemDTO> results = mongoTemplate.aggregate(
+                    aggregation, "disabled_jobseekers", DistributionItemDTO.class);
+            
+            Map<String, Long> distribution = new HashMap<>();
+            for (DistributionItemDTO item : results.getMappedResults()) {
+                String key = item.get_id() != null ? item.get_id().toString() : "미분류";
+                distribution.put(key, item.getCount());
+            }
+            log.debug("[getAgeDistribution] for {}: {}", disabilityType, distribution); 
+            return distribution;
+        } catch (Exception e) {
+            log.error("연령대별 분포 집계 중 오류 ({}): {}", disabilityType, e.getMessage(), e); 
+            return Collections.emptyMap();
+        }
+    }
+    
+    private Map<String, Long> getJobTypeDistribution(String disabilityType) {
+        try {
+            MatchOperation matchOperation = Aggregation.match(Criteria.where("장애유형").is(disabilityType));
+            GroupOperation groupOperation = Aggregation.group("희망직종").count().as("count");
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation);
+            
+            AggregationResults<DistributionItemDTO> results = mongoTemplate.aggregate(
+                    aggregation, "disabled_jobseekers", DistributionItemDTO.class);
+            
+            Map<String, Long> distribution = new HashMap<>();
+            for (DistributionItemDTO item : results.getMappedResults()) {
+                String key = item.get_id() != null ? item.get_id().toString() : "미분류";
+                distribution.put(key, item.getCount());
+            }
+            log.debug("[getJobTypeDistribution] for {}: {}", disabilityType, distribution);
+            return distribution;
+        } catch (Exception e) {
+            log.error("희망직종별 분포 집계 중 오류 ({}): {}", disabilityType, e.getMessage(), e);
+            return Collections.emptyMap();
+        }
+    }
+    
+    private Map<String, Long> getSalaryDistribution(String disabilityType) {
+        try {
+            MatchOperation matchOperation = Aggregation.match(Criteria.where("장애유형").is(disabilityType));
+            GroupOperation groupOperation = Aggregation.group("희망임금").count().as("count");
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation);
+            
+            AggregationResults<DistributionItemDTO> results = mongoTemplate.aggregate(
+                    aggregation, "disabled_jobseekers", DistributionItemDTO.class);
+            
+            Map<String, Long> distribution = new HashMap<>();
+            for (DistributionItemDTO item : results.getMappedResults()) {
+                String key = item.get_id() != null ? item.get_id().toString() : "미분류";
+                distribution.put(key, item.getCount());
+            }
+            log.debug("[getSalaryDistribution] for {}: {}", disabilityType, distribution);
+            return distribution;
+        } catch (Exception e) {
+            log.error("희망임금별 분포 집계 중 오류 ({}): {}", disabilityType, e.getMessage(), e);
+            return Collections.emptyMap();
+        }
+    }
+    
+    private List<DisabilityTypeStatsDTO.CombinedStatItem> getCombinedStats(String disabilityType, long disabilityTypeTotalCount) {
+        try {
+            MatchOperation matchOperation = Aggregation.match(
+                Criteria.where("장애유형").is(disabilityType)
+                        .and("희망지역").exists(true).ne(null).ne("")
+                        .and("연령").exists(true).ne(null)
+            );
+            
+            String ageGroupProjectionExpression = "{ $cond: { " +
+                                                 "  if: { $and: [ { $ne: ['$연령', null] }, { $in: [ { $type: '$연령' }, ['int', 'long', 'double', 'decimal'] ] } ] }, " +
+                                                 "  then: { $concat: [{ $toString: { $floor: { $divide: ['$연령', 10] } } }, '0대'] }, " +
+                                                 "  else: '미분류' " +
+                                                 "}}";
+
+            ProjectionOperation projectOperation = Aggregation.project()
+                    .and("중증여부").as("severity")
+                    .and(ctx -> Document.parse("{ $arrayElemAt: [{ $split: ['$희망지역', ' '] }, 0] }")).as("region")
+                    .and(ctx -> Document.parse(ageGroupProjectionExpression)).as("ageGroup") 
+                    .and("희망직종").as("jobType")
+                    .and("희망임금").as("salary");
+            
+            GroupOperation groupOperation = Aggregation.group("severity", "region", "ageGroup", "jobType", "salary")
+                    .count().as("count");
+            
+            org.springframework.data.domain.Sort.Direction sortDirection = org.springframework.data.domain.Sort.Direction.DESC;
+            org.springframework.data.mongodb.core.aggregation.SortOperation sortOperation = 
+                    Aggregation.sort(org.springframework.data.domain.Sort.by(sortDirection, "count"));
+            org.springframework.data.mongodb.core.aggregation.LimitOperation limitOperation = Aggregation.limit(10);
+            
+            Aggregation aggregation = Aggregation.newAggregation(
+                    matchOperation, projectOperation, groupOperation, sortOperation, limitOperation);
+            
+            AggregationResults<CombinedAggregationResultDTO> results = mongoTemplate.aggregate(
+                    aggregation, "disabled_jobseekers", CombinedAggregationResultDTO.class);
+            
+            List<DisabilityTypeStatsDTO.CombinedStatItem> combinedStats = new ArrayList<>();
+            for (CombinedAggregationResultDTO aggResult : results.getMappedResults()) {
+                CombinedStatsIdDTO idDoc = aggResult.get_id();
+                if (idDoc == null) continue;
+
+                DisabilityTypeStatsDTO.CombinedStatItem item = new DisabilityTypeStatsDTO.CombinedStatItem();
+                item.setSeverity(idDoc.getSeverity() != null ? idDoc.getSeverity() : "미분류");
+                item.setRegion(idDoc.getRegion() != null ? idDoc.getRegion() : "미분류");
+                item.setAgeGroup(idDoc.getAgeGroup() != null ? idDoc.getAgeGroup() : "미분류");
+                item.setJobType(idDoc.getJobType() != null ? idDoc.getJobType() : "미분류");
+                item.setSalary(idDoc.getSalary() != null ? idDoc.getSalary() : "미분류");
+                
+                long count = aggResult.getCount();
+                item.setCount(count);
+                
+                if (disabilityTypeTotalCount > 0) { 
+                    double percent = (double) count / disabilityTypeTotalCount * 100;
+                    item.setPercentOfTotal(Math.round(percent * 100) / 100.0);
+                } else {
+                    item.setPercentOfTotal(0.0);
+                }
+                combinedStats.add(item);
+            }
+            log.debug("[getCombinedStats] for {}: {} items", disabilityType, combinedStats.size());
+            return combinedStats;
+        } catch (Exception e) {
+            log.error("복합 통계 집계 중 오류 ({}): {}", disabilityType, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    private String mongoExpression(String expression) { // 이 메소드는 현재 사용되지 않음
+        return expression;
     }
 }
