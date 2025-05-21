@@ -27,24 +27,4 @@ public interface DisabledJobseekerRepository extends MongoRepository<DisabledJob
     // 검색어와 장애유형 모두 조건에 맞는 데이터 찾기
     @Query("{$and: [{$or: [{'희망직종': {$regex: ?0, $options: 'i'}}, {'희망지역': {$regex: ?0, $options: 'i'}}, {'장애유형': {$regex: ?0, $options: 'i'}}, {'기관분류': {$regex: ?0, $options: 'i'}}]}, {'장애유형': { $in: ?1 }}]}")
     List<DisabledJobseekerDTO> findBySearchTextAndDisabilityTypes(String searchText, List<String> disabilityTypes);
-
-    // 지역으로 검색 (정확한 매칭)
-    @Query("{'희망지역': ?0}")
-    List<DisabledJobseekerDTO> findByRegion(String region);
-
-    // 지역으로 검색 (부분 매칭)
-    @Query("{'희망지역': {$regex: ?0, $options: 'i'}}")
-    List<DisabledJobseekerDTO> findByRegionContaining(String region);
-
-    // 지역과 장애유형으로 검색
-    @Query("{$and: [{'희망지역': {$regex: ?0, $options: 'i'}}, {'장애유형': { $in: ?1 }}]}")
-    List<DisabledJobseekerDTO> findByRegionAndDisabilityTypes(String region, List<String> disabilityTypes);
-
-    // 지역과 검색어로 검색
-    @Query("{$and: [{'희망지역': {$regex: ?0, $options: 'i'}}, {$or: [{'희망직종': {$regex: ?1, $options: 'i'}}, {'장애유형': {$regex: ?1, $options: 'i'}}, {'기관분류': {$regex: ?1, $options: 'i'}}]}]}")
-    List<DisabledJobseekerDTO> findByRegionAndSearchText(String region, String searchText);
-
-    // 지역, 장애유형, 검색어 모두로 검색
-    @Query("{$and: [{'희망지역': {$regex: ?0, $options: 'i'}}, {'장애유형': { $in: ?1 }}, {$or: [{'희망직종': {$regex: ?2, $options: 'i'}}, {'기관분류': {$regex: ?2, $options: 'i'}}]}]}")
-    List<DisabledJobseekerDTO> findByRegionAndDisabilityTypesAndSearchText(String region, List<String> disabilityTypes, String searchText);
 }

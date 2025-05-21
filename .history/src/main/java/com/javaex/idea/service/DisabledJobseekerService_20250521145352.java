@@ -2,7 +2,6 @@ package com.javaex.idea.service;
 
 import com.javaex.idea.dto.DisabledJobseekerDTO;
 import com.javaex.idea.dto.DisabilityTypeStatsDTO;
-import com.javaex.idea.dto.RegionStatsDTO;
 import com.javaex.config.ApiKeyConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

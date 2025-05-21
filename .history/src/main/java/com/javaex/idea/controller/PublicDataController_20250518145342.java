@@ -23,7 +23,6 @@ import java.util.Arrays;
 
 import com.javaex.idea.dto.DisabledJobseekerDTO;
 import com.javaex.idea.service.DisabledJobseekerService;
-import com.javaex.idea.dto.RegionStatsDTO;
 
 @Slf4j
 @Tag(name = "Public Data API", description = "공공데이터 API 엔드포인트")
@@ -193,24 +192,6 @@ public class PublicDataController {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.error("장애유형별 통계 조회 실패 - 서버 오류: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @Operation(summary = "지역별 구직자 통계 조회", description = "특정 지역의 장애인 구직자 통계 정보를 조회합니다.")
-    @GetMapping("/disabled/jobseekers/stats/region/{region}")
-    public ResponseEntity<RegionStatsDTO> getRegionStats(@PathVariable String region) {
-        log.info("지역별 구직자 통계 조회 요청 - 지역: {}", region);
-        
-        try {
-            RegionStatsDTO stats = disabledJobseekerService.getRegionStats(region);
-            log.info("지역별 구직자 통계 조회 성공 - 지역: {}", region);
-            return ResponseEntity.ok(stats);
-        } catch (IllegalArgumentException e) {
-            log.warn("지역별 구직자 통계 조회 실패 - 잘못된 요청: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            log.error("지역별 구직자 통계 조회 실패 - 서버 오류: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
